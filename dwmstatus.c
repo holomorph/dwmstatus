@@ -27,29 +27,38 @@
 //  Defaults make extensive use of escape characters for colors which require
 //  colorstatus patch.  There are also "extended" characters selected to work
 //  with terminus2 font for icons.
+
 // Music player daemon
 #define MPD_STR       "\x05Î %s "            // mpd playing
 #define MPD_P_STR     "\x05Î Paused "        //  "  paused
 #define MPD_S_STR     "\x05Î Stopped "       //  "  stopped
 #define MPD_NONE_STR  "\x03Î Failed "        //  "  not running
+
 // Volume
 #define VOL_STR       "\x04Ô %d%% \x09Ý "    // volume as a percent
-#define VOL_MUTE_STR  "\x03 Ü	 Ô × Ü"      // muted
+#define VOL_MUTE_STR  "\x03 Ü	 Ô × Ü"        // muted
+
 // Core usage, temperature, and memory usage
 #define CPU_STR       "\x01Ï %d%%  "         // cpu usage
 #define CPU_HI_STR    "\x03Ï %d%%  "         // cpu usage urgent if above CPU_HI
 #define CPU_TEMP_STR  "\x01Ç %dC  "          // core temperature (C)
 #define MEM_STR       "\x01Þ %dM \x09Ý\x01 " // mem usage including cache/buffer
+
 // Wireless usage (wlan0)
 #define WIFI_STR      "\x07Ð %-4s \x06Ñ %-3s \x09Ý\x01 " // wlan0 down/up rates
+
 // Battery status, level, time remaining
-#define BAT_STR       "\x08Á %d%% (%d:%02.0f) "   // battery discharging & time left
-#define BAT_LOW_STR   "\x03Á %d%% (%d:%02.0f) "   // " urgent if below BAT_LOW
+#define BAT_STR       "\x08Á %d%% (%02.2f) "   // battery discharging & time left
+#define BAT_LOW_STR   "\x03Á %d%% (%02.2f) "   // " urgent if below BAT_LOW
 #define BAT_CHRG_STR  "\x08Å Á %d%% (%d:%02.0f) " // " charging
 #define BAT_FULL_STR  "\x08À Á %d%% "             // " full
+
 // Date-time
 #define DATE_TIME_STR "\x02 Õ %a %d %b %H:%M "    // date-time
 
+//
+//
+//
 int main() {
 	Display *dpy;
 	Window root;
@@ -63,7 +72,7 @@ int main() {
 	long rx_old,tx_old,rx_new,tx_new;
 	long jif1,jif2,jif3,jift;
 	long lnum1,lnum2,lnum3,lnum4;
-	char statnext[30], status[100];
+	char statnext[30], status[200];
 	char rxk[7], txk[7];
 	time_t current;
 	FILE *infile;
@@ -213,14 +222,12 @@ int main() {
 		}
 		else {
 			timeleft = (float) lnum1/lnum3;           // time until discharged
-			hours = (int) timeleft;                   // hours
-			timeleft = (float) (timeleft - hours)*60; // mins
 			if (num < BATT_LOW)
 				// battery urgent if below BATT_LOW
-				sprintf(statnext,BAT_LOW_STR,num,hours,timeleft);
+				sprintf(statnext,BAT_LOW_STR,num,timeleft);
 			else
 				// battery normal discharging
-				sprintf(statnext,BAT_STR,num,hours,timeleft);
+				sprintf(statnext,BAT_STR,num,timeleft);
 		}
 		strcat(status,statnext);
 	// Date & Time:
