@@ -2,8 +2,9 @@
 #define __DWMSTATUS_H_INCLUDED__
 
 #define BATT_LOW 11 // Threshold % battery, below which the display turns urgent
-#define CPU_HI   50 // Threshold usage %, above which the display turns urgent
+#define CPU_HI   .5 // Threshold cpu load, above which the display turns urgent
 #define INTERVAL 2  // Sleeps for INTERVAL seconds between updates
+
 
 // Files read for system info:
 #define CPU_FILE  "/proc/stat"
@@ -33,11 +34,11 @@
 #define VOL_STR      "\x04Ô %d%% \x09Ý " // volume as a percent
 #define VOL_MUTE_STR "\x03Ô × \x09Ý "    // muted
 
-// Core usage, temperature, and memory usage
-#define CPU_STR      "\x01Ï %d%%  "         // cpu usage
-#define CPU_HI_STR   "\x03Ï %d%%  "         // cpu usage urgent if above CPU_HI
+// Core load, temperature, and memory usage
+#define CPU_STR      "\x01Ï %02.f %02.f %02.f  " // cpu load
+#define CPU_HI_STR   "\x03Ï %02.f %02.f %02.f  " // cpu load urgent if above CPU_HI
 #define CPU_TEMP_STR "\x01Ç %dC  "          // core temperature (C)
-#define MEM_STR      "\x01Þ %dM \x09Ý\x01 " // mem usage including cache/buffer
+#define MEM_STR      "\x01Þ %dM \x09Ý\x01 " // memory usage
 
 // Wireless usage (wlan0)
 #define WIFI_STR     "\x07Ð %-4s \x06Ñ %-3s \x09Ý\x01 " // wlan0 down/up rates

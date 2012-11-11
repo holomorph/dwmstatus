@@ -8,9 +8,6 @@
 
 #include "dwmstatus.h"
 
-//
-//
-//
 static Display *dpy;
 
 void setstatus(char *str) {
@@ -18,20 +15,72 @@ void setstatus(char *str) {
   XSync(dpy, False);
 }
 
+// Core load averages:
+void print_load(char *load) {
+  double avgs[3];
+  getloadavg(avgs, 3);
+  if (avgs[0] > CPU_HI)
+    sprintf(load, CPU_HI_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
+  else
+    sprintf(load, CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
+}
+
+// Core temperature:
+//  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
+void print_coretemp(char *coretemp) {
+  FILE *f;
+  int temp;
+  f = fopen(CPU_TEMP0,"r");
+  fscanf(f,"%d\n", &temp);
+  fclose(f);
+  sprintf(coretemp, CPU_TEMP_STR, temp/1000);
+}
+
+// Memory use:
+//  Get the used memory with buffers/cache as in `free -m`
+void print_memory(char *mem) {
+  FILE *f;
+  int total, free, buffers, cached;
+  int total_used;
+  if(!(f = fopen(MEM_FILE, "r"))) {
+    fprintf(stderr, "Cannot open %s for reading.\n",MEM_FILE);
+    return;
+  }
+  fscanf(f, "MemTotal: %d kB\n", &total);
+  fscanf(f, "MemFree: %d kB\n",  &free);
+  fscanf(f, "Buffers: %d kB\n",  &buffers);
+  fscanf(f, "Cached: %d kB\n",   &cached);
+  total_used = (total - free - buffers - cached)/1024;
+  fclose(f);
+  snprintf(mem, 20, MEM_STR, total_used);
+}
+
+// Date & time:
+void print_datetime(char *datetime) {
+  time_t current;
+  time(&current);
+  strftime(datetime, 38, DATE_TIME_STR, localtime(&current));
+}
+
 int main() {
 // Declare all the vars we need
+  char load[22];
+  char mem[20];
+  char coretemp[11];
+  char datetime[24];
+
   struct mpd_song * song = NULL;
   char * title = NULL;
   char * artist = NULL;
   int num, hours;
   float timeleft;
-  long coretemp;
+  //long coretemp;
   long rx_old,tx_old,rx_new,tx_new;
   long jif1,jif2,jif3,jift;
   long lnum1,lnum2,lnum3,lnum4;
   char statnext[30], status[200];
   char rxk[7], txk[7];
-  time_t current;
+ // time_t current;
   FILE *infile;
 // Evaluate initial jiffies
   infile = fopen(CPU_FILE,"r");
@@ -55,14 +104,12 @@ int main() {
   // Music player daemon
   //  the string should be truncated because the status only allocates
   //  so many chars and too long a song title will result in bad behavior.
-  //  Also I will probably get rid of the call for artist.
     struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
     mpd_command_list_begin(conn, true);
     mpd_send_status(conn);
     mpd_send_current_song(conn);
     mpd_command_list_end(conn);
-  // Get whether mpd is connected
-    struct mpd_status* theStatus = mpd_recv_status(conn);
+    struct mpd_status* theStatus = mpd_recv_status(conn); // connected?
     if (!theStatus)
       sprintf(statnext,MPD_NONE_STR);
     else
@@ -70,17 +117,11 @@ int main() {
         mpd_response_next(conn);
         song = mpd_recv_song(conn);
         title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-        artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-        sprintf(statnext,MPD_STR,title,artist);
+        sprintf(statnext,MPD_STR,title);
         mpd_song_free(song);
       }
       else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
-        mpd_response_next(conn);
-        song = mpd_recv_song(conn);
-        title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-        artist = mpd_song_get_tag(song, MPD_TAG_ARTIST, 0);
-        sprintf(statnext,MPD_P_STR,title,artist);
-        mpd_song_free(song);
+        sprintf(statnext,MPD_P_STR);
       }
       else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
         sprintf(statnext,MPD_S_STR);
@@ -97,48 +138,27 @@ int main() {
     fclose(infile);
     if (num == -1)
     // volume is muted
-      sprintf(statnext,VOL_MUTE_STR,num);
+      sprintf(statnext,VOL_MUTE_STR);
     else
     // volume isn't muted
       sprintf(statnext,VOL_STR,num);
     strcat(status,statnext);
 
-  // CPU use:
-  //  reads CPU_FILE for the user (U), nice (N), system (S), & idle (I)
-  //  stats in that order. Let T = U+N+S+I. Computes usage according to:
-  //    usage = (1000*((T-T0) - (I - I0))/(T-T0) + 5)/10
-  //  Where appended 0 implies value from previous iteration. See here:
-  //  http://colby.id.au/node/39
-    infile = fopen(CPU_FILE,"r");
-    fscanf(infile,"cpu %ld %ld %ld %ld",&lnum1,&lnum2,&lnum3,&lnum4);
-    fclose(infile);
-    if (lnum4>jift) // make sure some value has changed from last iter
-      num = (int) (1000*((lnum1-jif1)+(lnum2-jif2)+(lnum3-jif3))/((lnum1-jif1)+(lnum2-jif2)+(lnum3-jif3)+(lnum4-jift)) + 5)/10;
-    else // if it hasn't, then usage is essentially zero
-      num = 0;
-  // overwrite old values with new ones
-    jif1=lnum1; jif2=lnum2; jif3=lnum3; jift=lnum4;
-    if (num > CPU_HI)
-    // display cpu usage as urgent
-      sprintf(statnext,CPU_HI_STR,num);
-    else
-    // normal display
-      sprintf(statnext,CPU_STR,num);
-    strcat(status,statnext);
-  // Core temperature
-  //  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
-    infile = fopen(CPU_TEMP0,"r");
-    fscanf(infile,"%ld\n",&coretemp);
-    fclose(infile);
-    sprintf(statnext,CPU_TEMP_STR,coretemp/1000);
-    strcat(status,statnext);
-  // Memory use:
-  //  Get the used memory with buffers/cache as in `free -m`
-    infile = fopen(MEM_FILE,"r");
-    fscanf(infile,"MemTotal: %ld kB\nMemFree: %ld kB\nBuffers: %ld kB\nCached: %ld kB\n",&lnum1,&lnum2,&lnum3,&lnum4);
-    fclose(infile);
-    sprintf(statnext,MEM_STR,(lnum1-lnum2-lnum3-lnum4)/1024);
-    strcat(status,statnext);
+    // Core load averages
+    //
+    print_load(load);
+    strcat(status, load);
+
+    // Core temperature
+    //  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
+    print_coretemp(coretemp);
+    strcat(status, coretemp);
+
+    // Memory use:
+    //  Get the used memory with buffers/cache as in `free -m`
+    print_memory(mem);
+    strcat(status, mem);
+
   // Wireless network usage
   //  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
   //  the difference between new and old values at each step.
@@ -153,6 +173,7 @@ int main() {
   // overwrite old values with new ones
     rx_old = rx_new;
     tx_old = tx_new;
+
   // Power / Battery:
   //  reads files which give energy in micro Watt hours. The power
   //  is given in micro Watts so a little arithmetic is needed to
@@ -186,11 +207,11 @@ int main() {
         sprintf(statnext,BAT_STR,num,timeleft);
     }
     strcat(status,statnext);
-  // Date & Time:
-    time(&current);
-    strftime(statnext,38,DATE_TIME_STR,localtime(&current));
-    strcat(status,statnext);
-  // Set root name
+
+    // date time!!
+    print_datetime(datetime); strcat(status,datetime);
+
+    // Set root name
     setstatus(status);
   }
 
