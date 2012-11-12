@@ -19,7 +19,7 @@ void setstatus(char *str) {
 void print_load(char *load) {
   double avgs[3];
   getloadavg(avgs, 3);
-  if (avgs[0] > CPU_HI)
+  if (avgs[0] > LOAD_HI)
     sprintf(load, CPU_HI_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
   else
     sprintf(load, CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
@@ -31,9 +31,13 @@ void print_coretemp(char *coretemp) {
   FILE *f;
   int temp;
   f = fopen(CPU_TEMP0,"r");
-  fscanf(f,"%d\n", &temp);
+  fscanf(f,"%d000\n", &temp);
   fclose(f);
-  sprintf(coretemp, CPU_TEMP_STR, temp/1000);
+  temp = temp/1000;
+  if (temp >= TEMP_HI)
+    sprintf(coretemp, TEMP_HI_STR, temp);
+  else
+    sprintf(coretemp, TEMP_STR, temp);
 }
 
 // Memory use:
@@ -63,7 +67,7 @@ void print_datetime(char *datetime) {
 }
 
 int main() {
-// Declare all the vars we need
+  // Declare all the vars we need
   char load[22];
   char mem[20];
   char coretemp[11];
@@ -73,31 +77,30 @@ int main() {
   char * title = NULL;
   char * artist = NULL;
   int num, hours;
+  int sound;
   float timeleft;
-  //long coretemp;
+
   long rx_old,tx_old,rx_new,tx_new;
-  long jif1,jif2,jif3,jift;
   long lnum1,lnum2,lnum3,lnum4;
   char statnext[30], status[200];
   char rxk[7], txk[7];
- // time_t current;
-  FILE *infile;
-// Evaluate initial jiffies
-  infile = fopen(CPU_FILE,"r");
-  fscanf(infile,"cpu %ld %ld %ld %ld",&jif1,&jif2,&jif3,&jift);
-  fclose(infile);
-// Evaluate initial wirelss statistics
-  infile = fopen(WIFI_DN,"r");
-  fscanf(infile,"%d",&rx_old);fclose(infile);
-  infile = fopen(WIFI_UP,"r");
-  fscanf(infile,"%d",&tx_old);fclose(infile);
-// Setup X display
+
+// Evaluate initial wireless statistics
+  FILE *f;
+  f = fopen(WIFI_DN,"r");
+  fscanf(f,"%d",&rx_old); fclose(f);
+  f = fopen(WIFI_UP,"r");
+  fscanf(f,"%d",&tx_old); fclose(f);
+
+  // Setup X display
   if (!(dpy = XOpenDisplay(NULL))) {
     fprintf(stderr, "dwmstatus: could not open display.\n");
     return 1;
   }
-  sleep(INTERVAL); // -.-
-// MAIN STATUS LOOP STARTS HERE:
+
+  //sleep(INTERVAL); // -.-
+
+  // MAIN STATUS LOOP STARTS HERE:
   for (;;sleep(INTERVAL)) {
   // reset/clear the status
     status[0]='\0';
@@ -133,15 +136,13 @@ int main() {
   // Audio volume:
   //  AUD_FILE must be present and contain an int between (inclusive) -1
   //  and 100. A script to write to AUD_FILE on volume changes is needed.
-    infile = fopen(AUD_FILE,"r");
-    fscanf(infile,"%d",&num);
-    fclose(infile);
-    if (num == -1)
-    // volume is muted
-      sprintf(statnext,VOL_MUTE_STR);
-    else
-    // volume isn't muted
-      sprintf(statnext,VOL_STR,num);
+    f = fopen(AUD_FILE,"r");
+    fscanf(f,"%d\n%d", &sound, &num);
+    fclose(f);
+    if (sound == 0) // volume is muted
+      sprintf(statnext, VOL_MUTE_STR, num);
+    else                // volume isn't muted
+      sprintf(statnext, VOL_STR, num);
     strcat(status,statnext);
 
     // Core load averages
@@ -162,10 +163,10 @@ int main() {
   // Wireless network usage
   //  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
   //  the difference between new and old values at each step.
-    infile = fopen(WIFI_DN,"r");
-    fscanf(infile,"%d",&rx_new);fclose(infile);
-    infile = fopen(WIFI_UP,"r");
-    fscanf(infile,"%d",&tx_new);fclose(infile);
+    f = fopen(WIFI_DN,"r");
+    fscanf(f,"%d",&rx_new);fclose(f);
+    f = fopen(WIFI_UP,"r");
+    fscanf(f,"%d",&tx_new);fclose(f);
     sprintf(rxk,"%dK",(rx_new-rx_old)/1024);
     sprintf(txk,"%dK",(tx_new-tx_old)/1024);
     sprintf(statnext,WIFI_STR,rxk,txk);
@@ -178,14 +179,14 @@ int main() {
   //  reads files which give energy in micro Watt hours. The power
   //  is given in micro Watts so a little arithmetic is needed to
   //  get the time remaining in hours:minutes.
-    infile = fopen(BATT_NOW,"r");
-    fscanf(infile,"%ld\n",&lnum1);fclose(infile);
-    infile = fopen(BATT_FULL,"r");
-    fscanf(infile,"%ld\n",&lnum2);fclose(infile);
-    infile = fopen(BATT_STAT,"r");
-    fscanf(infile,"%s\n",statnext);fclose(infile);
-    infile = fopen(BATT_POW,"r");
-    fscanf(infile,"%ld\n",&lnum3);fclose(infile);
+    f = fopen(BATT_NOW,"r");
+    fscanf(f,"%ld\n",&lnum1);fclose(f);
+    f = fopen(BATT_FULL,"r");
+    fscanf(f,"%ld\n",&lnum2);fclose(f);
+    f = fopen(BATT_STAT,"r");
+    fscanf(f,"%s\n",statnext);fclose(f);
+    f = fopen(BATT_POW,"r");
+    fscanf(f,"%ld\n",&lnum3);fclose(f);
   // remaining battery percent
     num = lnum1*100/lnum2;
     if (strncmp(statnext,"Charging",8) == 0) {

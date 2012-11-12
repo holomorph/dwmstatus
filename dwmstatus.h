@@ -1,15 +1,14 @@
 #ifndef __DWMSTATUS_H_INCLUDED__
 #define __DWMSTATUS_H_INCLUDED__
 
-#define BATT_LOW 11 // Threshold % battery, below which the display turns urgent
-#define CPU_HI   .5 // Threshold cpu load, above which the display turns urgent
-#define INTERVAL 2  // Sleeps for INTERVAL seconds between updates
-
+#define BATT_LOW 11 // Upper threshold for urgent battery %
+#define LOAD_HI  1  // Lower threshold for urgent cpu load
+#define TEMP_HI  75 // Lower threshold for urgent core temp
+#define INTERVAL 2  // Sleeps for INTERVAL seconds each iter
 
 // Files read for system info:
-#define CPU_FILE  "/proc/stat"
 #define MEM_FILE  "/proc/meminfo"
-#define AUD_FILE  "/home/mvo/.status_info"
+#define AUD_FILE  "/home/mvo/.volume"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
@@ -25,19 +24,20 @@
 //  with terminus2 font for icons.
 
 // Music player daemon
-#define MPD_STR      "\x05Î %s "      // mpd playing
-#define MPD_P_STR    "\x05Î Paused "  //  "  paused
-#define MPD_S_STR    "\x05Î Stopped " //  "  stopped
+#define MPD_STR      "\x07Î %s "      // mpd playing
+#define MPD_P_STR    "\x07Î Paused "  //  "  paused
+#define MPD_S_STR    "\x07Î Stopped " //  "  stopped
 #define MPD_NONE_STR "\x03Î Failed "  //  "  not running
 
 // Volume
-#define VOL_STR      "\x04Ô %d%% \x09Ý " // volume as a percent
-#define VOL_MUTE_STR "\x03Ô × \x09Ý "    // muted
+#define VOL_STR      "\x04Ô -%ddB \x09Ý " // volume in dB
+#define VOL_MUTE_STR "\x03Ô -%ddB \x09Ý " // muted
 
 // Core load, temperature, and memory usage
 #define CPU_STR      "\x01Ï %02.f %02.f %02.f  " // cpu load
-#define CPU_HI_STR   "\x03Ï %02.f %02.f %02.f  " // cpu load urgent if above CPU_HI
-#define CPU_TEMP_STR "\x01Ç %dC  "          // core temperature (C)
+#define CPU_HI_STR   "\x03Ï %02.f %02.f %02.f  " // cpu load urgent > CPU_HI
+#define TEMP_STR     "\x01Ç %dC  "          // core temp (C)
+#define TEMP_HI_STR  "\x03Ç %dC  "          // core temp urgent > CORETEMP_HI
 #define MEM_STR      "\x01Þ %dM \x09Ý\x01 " // memory usage
 
 // Wireless usage (wlan0)
