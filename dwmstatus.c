@@ -15,6 +15,22 @@ void setstatus(char *str) {
   XSync(dpy, False);
 }
 
+// Volume status
+//  AUD_FILE must be present and contain an int between (inclusive) -1 and 100.
+//  A script to write to AUD_FILE on volume changes is needed.
+
+void print_volume(char *volume) {
+  FILE *f;
+  int on, level;
+  f = fopen(AUD_FILE,"r");
+  fscanf(f,"%d\n%d", &on, &level);
+  fclose(f);
+  if (on == 0) // volume is muted
+    sprintf(volume, VOL_MUTE_STR, level);
+  else // volume isn't muted
+    sprintf(volume, VOL_STR, level);
+}
+
 // Core load averages:
 void print_load(char *load) {
   double avgs[3];
@@ -59,6 +75,45 @@ void print_memory(char *mem) {
   snprintf(mem, 20, MEM_STR, total_used);
 }
 
+// Battery status and level
+//
+void print_battery(char *battery) {
+  FILE *f;
+  char state[20];
+  int percent;
+  float timeleft;
+  long now, full, power;
+  // scanny
+  f = fopen(BATT_NOW,"r");
+  fscanf(f,"%ld\n",&now);
+  fclose(f);
+  f = fopen(BATT_FULL,"r");
+  fscanf(f,"%ld\n",&full);
+  fclose(f);
+  f = fopen(BATT_STAT,"r");
+  fscanf(f,"%s\n",state);
+  fclose(f);
+  f = fopen(BATT_POW,"r");
+  fscanf(f,"%ld\n",&power);
+  fclose(f);
+  // remaining battery percent
+  percent = now*100/full;
+  if (strncmp(state,"Charging",8) == 0) {
+    timeleft = (float) (full-now)/power;   // time until charged
+    sprintf(battery,BAT_CHRG_STR,percent,timeleft);
+  }
+  else if (strncmp(state,"Full",8) == 0) {
+    sprintf(battery,BAT_FULL_STR,percent);
+  }
+  else {
+    timeleft = (float) now/power; // time until discharged
+    if (percent < BATT_LOW) // battery urgent if below BATT_LOW
+      sprintf(battery,BAT_LOW_STR,percent,timeleft);
+    else // battery normal discharging
+      sprintf(battery,BAT_STR,percent,timeleft);
+  }
+}
+
 // Date & time:
 void print_datetime(char *datetime) {
   time_t current;
@@ -66,20 +121,61 @@ void print_datetime(char *datetime) {
   strftime(datetime, 38, DATE_TIME_STR, localtime(&current));
 }
 
+// MPD Now playing
+//
+void print_mpd(char *mpd) {
+  struct mpd_song *song = NULL;
+  char *title = NULL;
+  //char *title  = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+  //if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
+  int mute;
+
+  struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
+  mpd_command_list_begin(conn, true);
+  mpd_send_status(conn);
+  mpd_send_current_song(conn);
+  mpd_command_list_end(conn);
+  struct mpd_status *theStatus = mpd_recv_status(conn); // connected?
+  if (!theStatus)
+    sprintf(mpd,MPD_NONE_STR);
+  else
+    if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
+      mpd_response_next(conn);
+      song = mpd_recv_song(conn);
+      title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+      if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
+      title[50] = '\0'; // truncate it
+      sprintf(mpd,MPD_STR,title);
+      mpd_song_free(song);
+    }
+    else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
+      sprintf(mpd,MPD_P_STR);
+    }
+    else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
+      sprintf(mpd,MPD_S_STR);
+    }
+  mpd_response_finish(conn);
+  mpd_connection_free(conn);
+}
+
+
 int main() {
   // Declare all the vars we need
+  char mpd[50];
+  char volume[15];
   char load[22];
   char mem[20];
   char coretemp[11];
+  char battery[37];
   char datetime[24];
-
+/*
   struct mpd_song * song = NULL;
   char * title = NULL;
   char * artist = NULL;
   int num, hours;
   int sound;
   float timeleft;
-
+*/
   long rx_old,tx_old,rx_new,tx_new;
   long lnum1,lnum2,lnum3,lnum4;
   char statnext[30], status[200];
@@ -107,7 +203,7 @@ int main() {
   // Music player daemon
   //  the string should be truncated because the status only allocates
   //  so many chars and too long a song title will result in bad behavior.
-    struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
+/*  struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
     mpd_command_list_begin(conn, true);
     mpd_send_status(conn);
     mpd_send_current_song(conn);
@@ -132,33 +228,28 @@ int main() {
     mpd_response_finish(conn);
     mpd_connection_free(conn);
     strcat(status,statnext);
+*/  print_mpd(mpd);
+    strcat(status,mpd);
 
-  // Audio volume:
-  //  AUD_FILE must be present and contain an int between (inclusive) -1
-  //  and 100. A script to write to AUD_FILE on volume changes is needed.
-    f = fopen(AUD_FILE,"r");
-    fscanf(f,"%d\n%d", &sound, &num);
-    fclose(f);
-    if (sound == 0) // volume is muted
-      sprintf(statnext, VOL_MUTE_STR, num);
-    else                // volume isn't muted
-      sprintf(statnext, VOL_STR, num);
-    strcat(status,statnext);
+    // Audio volume:
+    //
+    print_volume(volume);
+    strcat(status,volume);
 
     // Core load averages
     //
     print_load(load);
-    strcat(status, load);
+    strcat(status,load);
 
     // Core temperature
     //  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
     print_coretemp(coretemp);
-    strcat(status, coretemp);
+    strcat(status,coretemp);
 
     // Memory use:
     //  Get the used memory with buffers/cache as in `free -m`
     print_memory(mem);
-    strcat(status, mem);
+    strcat(status,mem);
 
   // Wireless network usage
   //  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
@@ -175,42 +266,13 @@ int main() {
     rx_old = rx_new;
     tx_old = tx_new;
 
-  // Power / Battery:
-  //  reads files which give energy in micro Watt hours. The power
-  //  is given in micro Watts so a little arithmetic is needed to
-  //  get the time remaining in hours:minutes.
-    f = fopen(BATT_NOW,"r");
-    fscanf(f,"%ld\n",&lnum1);fclose(f);
-    f = fopen(BATT_FULL,"r");
-    fscanf(f,"%ld\n",&lnum2);fclose(f);
-    f = fopen(BATT_STAT,"r");
-    fscanf(f,"%s\n",statnext);fclose(f);
-    f = fopen(BATT_POW,"r");
-    fscanf(f,"%ld\n",&lnum3);fclose(f);
-  // remaining battery percent
-    num = lnum1*100/lnum2;
-    if (strncmp(statnext,"Charging",8) == 0) {
-      timeleft = (float) (lnum2-lnum1)/lnum3;   // time until charged
-      hours = (int) timeleft;                   // hours
-      timeleft = (float) (timeleft - hours)*60; // mins
-      sprintf(statnext,BAT_CHRG_STR,num,hours,timeleft);
-    }
-    else if (strncmp(statnext,"Full",8) == 0) {
-      sprintf(statnext,BAT_FULL_STR,num);
-    }
-    else {
-      timeleft = (float) lnum1/lnum3;           // time until discharged
-      if (num < BATT_LOW)
-      // battery urgent if below BATT_LOW
-        sprintf(statnext,BAT_LOW_STR,num,timeleft);
-      else
-      // battery normal discharging
-        sprintf(statnext,BAT_STR,num,timeleft);
-    }
-    strcat(status,statnext);
+    // battery!!!!!!
+    print_battery(battery);
+    strcat(status,battery);
 
     // date time!!
-    print_datetime(datetime); strcat(status,datetime);
+    print_datetime(datetime);
+    strcat(status,datetime);
 
     // Set root name
     setstatus(status);
