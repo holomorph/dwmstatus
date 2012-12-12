@@ -24,10 +24,10 @@
 //  with terminus2 font for icons.
 
 // Music player daemon
-#define MPD_STR      "\x04Î %s "      // mpd playing
-#define MPD_P_STR    "\x04Î Paused "  //  "  paused
-#define MPD_S_STR    "\x04Î Stopped " //  "  stopped
-#define MPD_NONE_STR "\x03Î Failed "  //  "  not running
+#define MPD_STR      "\x04Î %.50s \x09Ý "   // mpd playing
+#define MPD_P_STR    "\x04Î Paused \x09Ý "  //  "  paused
+#define MPD_S_STR    "\x04Î Stopped \x09Ý " //  "  stopped
+#define MPD_NONE_STR "\x03Î Failed \x09Ý "  //  "  not running
 
 // Volume
 #define VOL_STR      "\x07Ô -%ddB \x09Ý " // volume in dB

@@ -18,7 +18,6 @@ void setstatus(char *str) {
 // Volume status
 //  AUD_FILE must be present and contain an int between (inclusive) -1 and 100.
 //  A script to write to AUD_FILE on volume changes is needed.
-
 void print_volume(char *volume) {
   FILE *f;
   int on, level;
@@ -76,7 +75,6 @@ void print_memory(char *mem) {
 }
 
 // Battery status and level
-//
 void print_battery(char *battery) {
   FILE *f;
   char state[20];
@@ -122,10 +120,11 @@ void print_datetime(char *datetime) {
 }
 
 // MPD Now playing
-//
+//  the string should be truncated because the status only allocates
+//  so many chars and too long a song title will result in bad behavior.
 void print_mpd(char *mpd) {
-  struct mpd_song *song = NULL;
-  char *title = NULL;
+  //struct mpd_song *song = NULL;
+  //char *title = NULL;
   //char *title  = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
   //if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
   int mute;
@@ -141,10 +140,9 @@ void print_mpd(char *mpd) {
   else
     if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
       mpd_response_next(conn);
-      song = mpd_recv_song(conn);
-      title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+      struct mpd_song *song = mpd_recv_song(conn);
+      const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
       if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
-      title[50] = '\0'; // truncate it
       sprintf(mpd,MPD_STR,title);
       mpd_song_free(song);
     }
@@ -198,46 +196,18 @@ int main() {
 
   // MAIN STATUS LOOP STARTS HERE:
   for (;;sleep(INTERVAL)) {
-  // reset/clear the status
+    // reset/clear the status
     status[0]='\0';
-  // Music player daemon
-  //  the string should be truncated because the status only allocates
-  //  so many chars and too long a song title will result in bad behavior.
-/*  struct mpd_connection * conn = mpd_connection_new(NULL, 0, 30000);
-    mpd_command_list_begin(conn, true);
-    mpd_send_status(conn);
-    mpd_send_current_song(conn);
-    mpd_command_list_end(conn);
-    struct mpd_status* theStatus = mpd_recv_status(conn); // connected?
-    if (!theStatus)
-      sprintf(statnext,MPD_NONE_STR);
-    else
-      if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
-        mpd_response_next(conn);
-        song = mpd_recv_song(conn);
-        title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-        sprintf(statnext,MPD_STR,title);
-        mpd_song_free(song);
-      }
-      else if (mpd_status_get_state(theStatus) == MPD_STATE_PAUSE) {
-        sprintf(statnext,MPD_P_STR);
-      }
-      else if (mpd_status_get_state(theStatus) == MPD_STATE_STOP) {
-        sprintf(statnext,MPD_S_STR);
-      }
-    mpd_response_finish(conn);
-    mpd_connection_free(conn);
-    strcat(status,statnext);
-*/  print_mpd(mpd);
+
+    // Music player daemon
+    print_mpd(mpd);
     strcat(status,mpd);
 
     // Audio volume:
-    //
     print_volume(volume);
     strcat(status,volume);
 
     // Core load averages
-    //
     print_load(load);
     strcat(status,load);
 
