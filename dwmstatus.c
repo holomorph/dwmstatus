@@ -123,19 +123,14 @@ void print_datetime(char *datetime) {
 //  the string should be truncated because the status only allocates
 //  so many chars and too long a song title will result in bad behavior.
 void print_mpd(char *mpd) {
-  //struct mpd_song *song = NULL;
-  //char *title = NULL;
-  //char *title  = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-  //if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
   int mute;
-
   struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
   mpd_command_list_begin(conn, true);
   mpd_send_status(conn);
   mpd_send_current_song(conn);
   mpd_command_list_end(conn);
   struct mpd_status *theStatus = mpd_recv_status(conn); // connected?
-  if (!theStatus)
+  if (!theStatus) // this all is ugly fix it
     sprintf(mpd,MPD_NONE_STR);
   else
     if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
@@ -156,6 +151,23 @@ void print_mpd(char *mpd) {
   mpd_connection_free(conn);
 }
 
+// Wireless network usage
+//  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
+//  the difference between new and old values at each step.
+long rx_old,tx_old,rx_new,tx_new;
+void print_wifi(char *wifi) {
+  FILE *f;
+  char rxk[7], txk[7];
+  f = fopen(WIFI_DN,"r");
+  fscanf(f,"%d",&rx_new);
+  fclose(f);
+  f = fopen(WIFI_UP,"r");
+  fscanf(f,"%d",&tx_new);
+  fclose(f);
+  sprintf(rxk,"%dK",(rx_new-rx_old)/1024/INTERVAL);
+  sprintf(txk,"%dK",(tx_new-tx_old)/1024/INTERVAL);
+  sprintf(wifi,WIFI_STR,rxk,txk);
+}
 
 int main() {
   // Declare all the vars we need
@@ -164,20 +176,11 @@ int main() {
   char load[22];
   char mem[20];
   char coretemp[11];
+  char wifi[30];
   char battery[37];
   char datetime[24];
-/*
-  struct mpd_song * song = NULL;
-  char * title = NULL;
-  char * artist = NULL;
-  int num, hours;
-  int sound;
-  float timeleft;
-*/
-  long rx_old,tx_old,rx_new,tx_new;
-  long lnum1,lnum2,lnum3,lnum4;
+
   char statnext[30], status[200];
-  char rxk[7], txk[7];
 
 // Evaluate initial wireless statistics
   FILE *f;
@@ -191,8 +194,6 @@ int main() {
     fprintf(stderr, "dwmstatus: could not open display.\n");
     return 1;
   }
-
-  //sleep(INTERVAL); // -.-
 
   // MAIN STATUS LOOP STARTS HERE:
   for (;;sleep(INTERVAL)) {
@@ -212,27 +213,17 @@ int main() {
     strcat(status,load);
 
     // Core temperature
-    //  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
     print_coretemp(coretemp);
     strcat(status,coretemp);
 
     // Memory use:
-    //  Get the used memory with buffers/cache as in `free -m`
     print_memory(mem);
     strcat(status,mem);
 
-  // Wireless network usage
-  //  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
-  //  the difference between new and old values at each step.
-    f = fopen(WIFI_DN,"r");
-    fscanf(f,"%d",&rx_new);fclose(f);
-    f = fopen(WIFI_UP,"r");
-    fscanf(f,"%d",&tx_new);fclose(f);
-    sprintf(rxk,"%dK",(rx_new-rx_old)/1024);
-    sprintf(txk,"%dK",(tx_new-tx_old)/1024);
-    sprintf(statnext,WIFI_STR,rxk,txk);
-    strcat(status,statnext);
-  // overwrite old values with new ones
+    // Wireless network usage
+    print_wifi(wifi);
+    strcat(status,wifi);
+    // overwrite old values with new ones
     rx_old = rx_new;
     tx_old = tx_new;
 
@@ -252,4 +243,3 @@ int main() {
   XCloseDisplay(dpy);
   return 0;
 }
-
