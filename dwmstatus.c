@@ -120,8 +120,6 @@ void print_datetime(char *datetime) {
 }
 
 // MPD Now playing
-//  the string should be truncated because the status only allocates
-//  so many chars and too long a song title will result in bad behavior.
 void print_mpd(char *mpd) {
   int mute;
   struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
@@ -130,7 +128,7 @@ void print_mpd(char *mpd) {
   mpd_send_current_song(conn);
   mpd_command_list_end(conn);
   struct mpd_status *theStatus = mpd_recv_status(conn); // connected?
-  if (!theStatus) // this all is ugly fix it
+  if (!theStatus)
     sprintf(mpd,MPD_NONE_STR);
   else
     if (mpd_status_get_state(theStatus) == MPD_STATE_PLAY) {
@@ -182,7 +180,7 @@ int main() {
 
   char statnext[30], status[200];
 
-// Evaluate initial wireless statistics
+  // Evaluate initial wireless statistics
   FILE *f;
   f = fopen(WIFI_DN,"r");
   fscanf(f,"%d",&rx_old); fclose(f);
