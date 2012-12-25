@@ -8,7 +8,7 @@
 
 // Files read for system info:
 #define MEM_FILE  "/proc/meminfo"
-#define AUD_FILE  "/home/mvo/.volume"
+#define AUD_FILE  "/run/user/1000/pulse/volume_info"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
@@ -30,8 +30,8 @@
 #define MPD_NONE_STR "\x03Î Failed \x09Ý "  //  "  not running
 
 // Volume
-#define VOL_STR      "\x07Ô -%ddB \x09Ý " // volume in dB
-#define VOL_MUTE_STR "\x03Ô -%ddB \x09Ý " // muted
+#define VOL_STR      "\x07Ô %d%% \x09Ý " // volume in dB
+#define VOL_MUTE_STR "\x03Ô %d%% \x09Ý " // muted
 
 // Core load, temperature, and memory usage
 #define CPU_STR      "\x01Ï %02.f %02.f %02.f  " // cpu load
