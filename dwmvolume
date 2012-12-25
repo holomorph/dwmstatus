@@ -1,0 +1,29 @@
+#!/bin/bash
+
+INTERVAL=4
+FILE=$XDG_RUNTIME_DIR/pulse/volume_info
+
+case $1 in
+  "increase")
+    if $(ponymix is-muted); then
+      echo -e "0\n$(ponymix increase $INTERVAL)" > $FILE
+    else
+      echo -e "1\n$(ponymix increase $INTERVAL)" > $FILE
+    fi
+    ;;
+  "decrease")
+    if $(ponymix is-muted); then
+      echo -e "0\n$(ponymix decrease $INTERVAL)" > $FILE
+    else
+      echo -e "1\n$(ponymix decrease $INTERVAL)" > $FILE
+    fi
+    ;;
+  "toggle")
+    [[ $(ponymix toggle) ]] && \
+    if $(ponymix is-muted); then
+      echo -e "0\n$(ponymix get-volume)" > $FILE
+    else
+      echo -e "1\n$(ponymix get-volume)" > $FILE
+    fi
+    ;;
+esac
