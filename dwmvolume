@@ -1,7 +1,14 @@
 #!/bin/bash
 
-INTERVAL=4
+INTERVAL=1
 FILE=$XDG_RUNTIME_DIR/pulse/volume_info
+
+[[ -z "$1" ]] && \
+if $(ponymix is-muted); then
+  echo -e "0\n$(ponymix get-volume)" > $FILE
+else
+  echo -e "1\n$(ponymix get-volume)" > $FILE
+fi
 
 case $1 in
   "increase")
