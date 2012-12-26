@@ -15,9 +15,7 @@ void setstatus(char *str) {
   XSync(dpy, False);
 }
 
-// Volume status
-//  AUD_FILE must be present and contain an int between (inclusive) -1 and 100.
-//  A script to write to AUD_FILE on volume changes is needed.
+// Volume info
 void print_volume(char *volume) {
   FILE *f;
   int on, level;
@@ -30,7 +28,7 @@ void print_volume(char *volume) {
     sprintf(volume, VOL_STR, level);
 }
 
-// Core load averages:
+// Core load averages
 void print_load(char *load) {
   double avgs[3];
   getloadavg(avgs, 3);
@@ -40,8 +38,7 @@ void print_load(char *load) {
     sprintf(load, CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
 }
 
-// Core temperature:
-//  The file CPU_TEMP0 gives temp in degrees C with three appended zeroes
+// Core temperature
 void print_coretemp(char *coretemp) {
   FILE *f;
   int temp;
@@ -55,8 +52,7 @@ void print_coretemp(char *coretemp) {
     sprintf(coretemp, TEMP_STR, temp);
 }
 
-// Memory use:
-//  Get the used memory with buffers/cache as in `free -m`
+// Memory use
 void print_memory(char *mem) {
   FILE *f;
   int total, free, buffers, cached;
@@ -112,7 +108,7 @@ void print_battery(char *battery) {
   }
 }
 
-// Date & time:
+// Date & time
 void print_datetime(char *datetime) {
   time_t current;
   time(&current);
@@ -150,8 +146,6 @@ void print_mpd(char *mpd) {
 }
 
 // Wireless network usage
-//  Gets download/upload totals from WIFI_DN & WIFI_UP and computes
-//  the difference between new and old values at each step.
 long rx_old,tx_old,rx_new,tx_new;
 void print_wifi(char *wifi) {
   FILE *f;
@@ -187,7 +181,7 @@ int main() {
   f = fopen(WIFI_UP,"r");
   fscanf(f,"%d",&tx_old); fclose(f);
 
-  // Setup X display
+  // Set up X display
   if (!(dpy = XOpenDisplay(NULL))) {
     fprintf(stderr, "dwmstatus: could not open display.\n");
     return 1;
