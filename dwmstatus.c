@@ -87,21 +87,20 @@ void print_battery(char *battery) {
   f = fopen(BATT_STAT,"r");
   fscanf(f,"%s\n",state);
   fclose(f);
-  f = fopen(BATT_POW,"r");
-  fscanf(f,"%ld\n",&power);
-  fclose(f);
   // remaining battery percent
   percent = now*100/full;
   if (strncmp(state,"Charging",8) == 0) {
-    timeleft = (float) (full-now)/power;   // time until charged
-    sprintf(battery,BAT_CHRG_STR,percent,timeleft);
+    sprintf(battery,BAT_CHRG_STR,percent);
   }
   else if (strncmp(state,"Full",8) == 0) {
     sprintf(battery,BAT_FULL_STR,percent);
   }
   else {
-    timeleft = (float) now/power; // time until discharged
-    if (percent < BATT_LOW) // battery urgent if below BATT_LOW
+		f = fopen(BATT_POW,"r");
+		fscanf(f,"%ld\n",&power);
+		fclose(f);
+		timeleft = (float) now/power; // time until discharged
+		if (percent < BATT_LOW) // battery urgent if below BATT_LOW
       sprintf(battery,BAT_LOW_STR,percent,timeleft);
     else // battery normal discharging
       sprintf(battery,BAT_STR,percent,timeleft);

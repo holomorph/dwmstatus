@@ -46,7 +46,7 @@
 // Battery status, level, time remaining
 #define BAT_STR      "\x0AÁ %d%% (%02.2f) " // battery discharging & time left
 #define BAT_LOW_STR  "\x03Á %d%% (%02.2f) " //    "    urgent if below BAT_LOW
-#define BAT_CHRG_STR "\x0AÅ %d%% (%02.2f) " //    "    charging
+#define BAT_CHRG_STR "\x0AÅ %d%% "          //    "    charging
 #define BAT_FULL_STR "\x0AÀ %d%% "          //    "    full
 
 // Date-time
