@@ -116,7 +116,6 @@ void print_datetime(char *datetime) {
 
 // MPD Now playing
 void print_mpd(char *mpd) {
-  int mute;
   struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
   mpd_command_list_begin(conn, true);
   mpd_send_status(conn);
@@ -150,13 +149,13 @@ void print_wifi(char *wifi) {
   FILE *f;
   char rxk[7], txk[7];
   f = fopen(WIFI_DN,"r");
-  fscanf(f,"%d",&rx_new);
+  fscanf(f,"%ld",&rx_new);
   fclose(f);
   f = fopen(WIFI_UP,"r");
-  fscanf(f,"%d",&tx_new);
+  fscanf(f,"%ld",&tx_new);
   fclose(f);
-  sprintf(rxk,"%dK",(rx_new-rx_old)/1024/INTERVAL);
-  sprintf(txk,"%dK",(tx_new-tx_old)/1024/INTERVAL);
+  sprintf(rxk,"%dK",(int)(rx_new-rx_old)/1024/INTERVAL);
+  sprintf(txk,"%dK",(int)(tx_new-tx_old)/1024/INTERVAL);
   sprintf(wifi,WIFI_STR,rxk,txk);
 }
 
@@ -171,14 +170,14 @@ int main() {
   char battery[37];
   char datetime[24];
 
-  char statnext[30], status[200];
+  char status[200];
 
   // Evaluate initial wireless statistics
   FILE *f;
   f = fopen(WIFI_DN,"r");
-  fscanf(f,"%d",&rx_old); fclose(f);
+  fscanf(f,"%ld",&rx_old); fclose(f);
   f = fopen(WIFI_UP,"r");
-  fscanf(f,"%d",&tx_old); fclose(f);
+  fscanf(f,"%ld",&tx_old); fclose(f);
 
   // Set up X display
   if (!(dpy = XOpenDisplay(NULL))) {
