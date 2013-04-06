@@ -3,6 +3,8 @@ VERSION = $(shell git archive --always)
 CFLAGS = -g -std=c99 -pedantic -Wall -O0
 LDFLAGS = -g -lX11 -lmpdclient
 
+all: dwmstatus
+
 dwmstatus: dwmstatus.c dwmstatus.h
 
 clean:
@@ -13,8 +15,6 @@ dist:
 
 install: dwmstatus
 	install -Dm755 dwmstatus $(DESTDIR)/usr/bin/dwmstatus
+	install -Dm755 dwmvolume $(DESTDIR)/usr/bin/dwmvolume
 
-uninstall:
-	$(RM) $(DESTDIR)/usr/bin/dwmstatus
-
-.PHONY: clean dist install uninstall
+.PHONY: clean dist install
