@@ -14,7 +14,7 @@ md5sums=('SKIP')
 
 pkgver() {
 	cd "dwmstatus"
-  echo "$(git rev-list --count HEAD).$(git describe --always )"
+	echo "$(git rev-list --count HEAD).$(git describe --always )"
 }
 
 build() {
