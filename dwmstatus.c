@@ -160,7 +160,6 @@ void print_wifi(char *wifi) {
 }
 
 int main() {
-  // Declare all the vars we need
   char mpd[50];
   char volume[15];
   char load[22];
@@ -179,13 +178,11 @@ int main() {
   f = fopen(WIFI_UP,"r");
   fscanf(f,"%ld",&tx_old); fclose(f);
 
-  // Set up X display
   if (!(dpy = XOpenDisplay(NULL))) {
     fprintf(stderr, "dwmstatus: could not open display.\n");
     return 1;
   }
 
-  // MAIN STATUS LOOP STARTS HERE:
   for (;;sleep(INTERVAL)) {
     // reset/clear the status
     status[0]='\0';
