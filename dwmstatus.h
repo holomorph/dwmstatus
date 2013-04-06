@@ -52,4 +52,6 @@
 // Date-time
 #define DATE_TIME_STR "\x02 Õ %a %d %b %H:%M "    // date-time
 
+int getloadavg(double loadavg[], int nelem);
+
 #endif
