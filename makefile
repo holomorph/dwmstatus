@@ -3,8 +3,6 @@ VERSION = $(shell git archive --always)
 CFLAGS = -g -std=c99 -pedantic -Wall -O0
 LDFLAGS = -g -lX11 -lmpdclient
 
-all: dwmstatus
-
 dwmstatus: dwmstatus.c dwmstatus.h
 
 clean:
