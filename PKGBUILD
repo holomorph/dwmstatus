@@ -1,5 +1,5 @@
 pkgname=dwmstatus-hm-git
-pkgver=31.a0f136a
+pkgver=32.957449f
 pkgrel=1
 pkgdesc="A dwm status bar written in C, fork by holomorph"
 arch=('i686' 'x86_64')
