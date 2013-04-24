@@ -1,6 +1,3 @@
-#ifndef __DWMSTATUS_H_INCLUDED__
-#define __DWMSTATUS_H_INCLUDED__
-
 #define BATT_LOW 11 // Upper threshold for urgent battery %
 #define LOAD_HI  1  // Lower threshold for urgent cpu load
 #define TEMP_HI  75 // Lower threshold for urgent core temp
@@ -51,7 +48,3 @@
 
 // Date-time
 #define DATE_TIME_STR "\x05 Õ %a %d %b %H:%M "    // date-time
-
-int getloadavg(double loadavg[], int nelem);
-
-#endif
