@@ -144,6 +144,8 @@ char *battery(void) {
   }
 }
 
+static int tmsleep = 0;
+
 char *mktimes(void) {
 	char buf[129];
 	time_t tim;
@@ -162,5 +164,6 @@ char *mktimes(void) {
 		exit(1);
 	}
 
+	tmsleep = 60 - timtm->tm_sec;
 	return smprintf("%s", buf);
 }

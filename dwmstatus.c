@@ -48,7 +48,7 @@ int main(void) {
 			batt = battery();
 		}
 
-		if (runevery(&count60, 60)) {
+		if (runevery(&count60, tmsleep)) {
 			free(datetime);
 			datetime = mktimes();
 		}
