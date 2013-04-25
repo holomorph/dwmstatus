@@ -46,7 +46,7 @@ mktimes(char *fmt, char *tzname)
 		exit(1);
 	}
 
-	if (!strftime(buf, sizeof(buf)-1, fmt, timtm)) {
+	if (!strftime(buf, sizeof(buf)-1, DATE_TIME_STR, timtm)) {
 		fprintf(stderr, "strftime == 0\n");
 		exit(1);
 	}
@@ -71,5 +71,5 @@ loadavg(void)
 		exit(1);
 	}
 
-	return smprintf("%.2f %.2f %.2f", avgs[0], avgs[1], avgs[2]);
+	return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
 }

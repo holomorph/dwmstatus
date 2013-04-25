@@ -12,6 +12,7 @@
 
 #include <X11/Xlib.h>
 
+#include "config.h"
 #include "function.h"
 
 char *tzargentina = "America/Buenos_Aires";
@@ -32,7 +33,7 @@ main(void)
 		return 1;
 	}
 
-	for (;;sleep(90)) {
+	for (;;sleep(INTERVAL)) {
 		avgs = loadavg();
 		tmar = mktimes("%H:%M", tzargentina);
 		tmutc = mktimes("%H:%M", tzutc);
