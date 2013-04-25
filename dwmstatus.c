@@ -18,6 +18,10 @@
 int main(void) {
 	char *status;
 	char *avgs;
+	char *core = NULL;
+	char *mem = NULL;
+	char *net;
+	char *batt = NULL;
 	char *datetime = NULL;
 	time_t count6 = 0;
 	time_t count60 = 0;
@@ -27,10 +31,22 @@ int main(void) {
 		return 1;
 	}
 
+  FILE *f;
+  f = fopen(WIFI_DN,"r");
+  fscanf(f,"%ld",&rx_old); fclose(f);
+  f = fopen(WIFI_UP,"r");
+  fscanf(f,"%ld",&tx_old); fclose(f);
+
 	for (;;sleep(INTERVAL)) {
 		if (runevery(&count6, 6)) {
 			free(avgs);
+			free(core);
+			free(mem);
+			free(batt);
 			avgs = loadavg();
+			core = coretemp();
+			mem = memory();
+			batt = battery();
 		}
 
 		if (runevery(&count60, 60)) {
@@ -38,9 +54,14 @@ int main(void) {
 			datetime = mktimes();
 		}
 
-		status = smprintf("%s%s", avgs, datetime);
+		net = network();		
+    rx_old = rx_new;
+    tx_old = tx_new;
+
+		status = smprintf("%s%s%s%s%s%s%s", avgs, core, mem, net, batt, datetime);
 		setstatus(status);
 		free(status);
+		free(net);
 	}
 
 	XCloseDisplay(dpy);
