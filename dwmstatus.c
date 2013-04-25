@@ -1,4 +1,3 @@
-#define _BSD_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,4 +66,3 @@ int main(void) {
 	XCloseDisplay(dpy);
 	return 0;
 }
-

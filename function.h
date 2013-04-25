@@ -1,9 +1,13 @@
+/* xorg */
+
 static Display *dpy;
 
 void setstatus(char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
 	XSync(dpy, False);
 }
+
+/* convenience functions */
 
 char *smprintf(char *fmt, ...) {
 	va_list fmtargs;
@@ -37,26 +41,9 @@ int runevery(time_t *ltime, int sec) {
 		return(0);
 }
 
-char *mktimes(void) {
-	char buf[129];
-	time_t tim;
-	struct tm *timtm;
+/* status line functions */
 
-	memset(buf, 0, sizeof(buf));
-	tim = time(NULL);
-	timtm = localtime(&tim);
-	if (timtm == NULL) {
-		perror("localtime");
-		exit(1);
-	}
-
-	if (!strftime(buf, sizeof(buf)-1, DATE_TIME_STR, timtm)) {
-		fprintf(stderr, "strftime == 0\n");
-		exit(1);
-	}
-
-	return smprintf("%s", buf);
-}
+int getloadavg(double loadavg[], int nelem);
 
 char *loadavg(void) {
 	double avgs[3];
@@ -67,22 +54,6 @@ char *loadavg(void) {
 	}
 
 	return smprintf(CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
-}
-
-char *memory(void) {
-	FILE *f;
-	int total, free, buffers, cached, used;
-	if(!(f = fopen(MEM_FILE, "r"))) {
-		fprintf(stderr, "cannot read %s\n", MEM_FILE);
-		exit(1);
-	}
-  fscanf(f, "MemTotal:%d kB\n", &total);
-  fscanf(f, "MemFree:%d kB\n",  &free);
-  fscanf(f, "Buffers:%d kB\n",  &buffers);
-  fscanf(f, "Cached:%d kB\n",   &cached);
-  fclose(f);
-  used = (total - free - buffers - cached)/1024;
-  return smprintf(MEM_STR, used);
 }
 
 char *coretemp(void) {
@@ -100,17 +71,38 @@ char *coretemp(void) {
     return smprintf(TEMP_STR, temp);
 }
 
+
+char *memory(void) {
+	FILE *f;
+	int total, free, buffers, cached, used;
+
+	if(!(f = fopen(MEM_FILE, "r"))) {
+		fprintf(stderr, "cannot read %s\n", MEM_FILE);
+		exit(1);
+	}
+  fscanf(f, "MemTotal:%d kB\n", &total);
+  fscanf(f, "MemFree:%d kB\n",  &free);
+  fscanf(f, "Buffers:%d kB\n",  &buffers);
+  fscanf(f, "Cached:%d kB\n",   &cached);
+  fclose(f);
+
+  used = (total - free - buffers - cached)/1024;
+  return smprintf(MEM_STR, used);
+}
+
 long rx_old,tx_old,rx_new,tx_new;
 
 char *network(void) {
   FILE *f;
   char rxk[7], txk[7];
+
   f = fopen(WIFI_DN,"r");
   fscanf(f, "%ld", &rx_new);
   fclose(f);
   f = fopen(WIFI_UP,"r");
   fscanf(f, "%ld", &tx_new);
   fclose(f);
+
   sprintf(rxk,"%dK",(int)(rx_new-rx_old)/1024/INTERVAL);
   sprintf(txk,"%dK",(int)(tx_new-tx_old)/1024/INTERVAL);
   return smprintf(WIFI_STR, rxk, txk);
@@ -150,4 +142,25 @@ char *battery(void) {
     else
       return smprintf(BAT_STR, percent, timeleft);
   }
+}
+
+char *mktimes(void) {
+	char buf[129];
+	time_t tim;
+	struct tm *timtm;
+
+	memset(buf, 0, sizeof(buf));
+	tim = time(NULL);
+	timtm = localtime(&tim);
+	if (timtm == NULL) {
+		perror("localtime");
+		exit(1);
+	}
+
+	if (!strftime(buf, sizeof(buf)-1, DATE_TIME_STR, timtm)) {
+		fprintf(stderr, "strftime == 0\n");
+		exit(1);
+	}
+
+	return smprintf("%s", buf);
 }
