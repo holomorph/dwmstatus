@@ -15,12 +15,12 @@
 #include "config.h"
 #include "function.h"
 
-int
-main(void)
-{
+int main(void) {
 	char *status;
 	char *avgs;
-	char *datetime;
+	char *datetime = NULL;
+	time_t count6 = 0;
+	time_t count60 = 0;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -28,17 +28,22 @@ main(void)
 	}
 
 	for (;;sleep(INTERVAL)) {
-		avgs = loadavg();
-		datetime = mktimes();
+		if (runevery(&count6, 6)) {
+			free(avgs);
+			avgs = loadavg();
+		}
+
+		if (runevery(&count60, 60)) {
+			free(datetime);
+			datetime = mktimes();
+		}
 
 		status = smprintf("%s%s", avgs, datetime);
 		setstatus(status);
-		free(avgs);
 		free(status);
 	}
 
 	XCloseDisplay(dpy);
-
 	return 0;
 }
 

@@ -1,8 +1,11 @@
 static Display *dpy;
 
-char *
-smprintf(char *fmt, ...)
-{
+void setstatus(char *str) {
+	XStoreName(dpy, DefaultRootWindow(dpy), str);
+	XSync(dpy, False);
+}
+
+char *smprintf(char *fmt, ...) {
 	va_list fmtargs;
 	char *ret;
 	int len;
@@ -22,6 +25,16 @@ smprintf(char *fmt, ...)
 	va_end(fmtargs);
 
 	return ret;
+}
+
+int runevery(time_t *ltime, int sec) {
+	time_t now = time(NULL);
+	if (difftime(now, *ltime) >= sec) {
+		*ltime = now;
+		return(1);
+	}
+	else
+		return(0);
 }
 
 char *mktimes(void) {
@@ -45,16 +58,7 @@ char *mktimes(void) {
 	return smprintf("%s", buf);
 }
 
-void
-setstatus(char *str)
-{
-	XStoreName(dpy, DefaultRootWindow(dpy), str);
-	XSync(dpy, False);
-}
-
-char *
-loadavg(void)
-{
+char *loadavg(void) {
 	double avgs[3];
 
 	if (getloadavg(avgs, 3) < 0) {
@@ -62,5 +66,5 @@ loadavg(void)
 		exit(1);
 	}
 
-	return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
+	return smprintf(CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
 }
