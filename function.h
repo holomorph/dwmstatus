@@ -24,21 +24,12 @@ smprintf(char *fmt, ...)
 	return ret;
 }
 
-void
-settz(char *tzname)
-{
-	setenv("TZ", tzname, 1);
-}
-
-char *
-mktimes(char *fmt, char *tzname)
-{
+char *mktimes(void) {
 	char buf[129];
 	time_t tim;
 	struct tm *timtm;
 
 	memset(buf, 0, sizeof(buf));
-	settz(tzname);
 	tim = time(NULL);
 	timtm = localtime(&tim);
 	if (timtm == NULL) {
