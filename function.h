@@ -90,7 +90,15 @@ char *memory(void) {
   return smprintf(MEM_STR, used);
 }
 
-long rx_old,tx_old,rx_new,tx_new;
+static long rx_old, tx_old, rx_new, tx_new;
+
+void network_init(void) {
+	FILE *f;
+	f = fopen(WIFI_DN,"r");
+	fscanf(f,"%ld", &rx_old); fclose(f);
+	f = fopen(WIFI_UP,"r");
+	fscanf(f,"%ld", &tx_old); fclose(f);
+}
 
 char *network(void) {
   FILE *f;
@@ -105,7 +113,9 @@ char *network(void) {
 
   sprintf(rxk,"%dK",(int)(rx_new-rx_old)/1024/INTERVAL);
   sprintf(txk,"%dK",(int)(tx_new-tx_old)/1024/INTERVAL);
-  return smprintf(WIFI_STR, rxk, txk);
+	rx_old = rx_new;
+	tx_old = tx_new;
+	return smprintf(WIFI_STR, rxk, txk);
 }
 
 char *battery(void) {

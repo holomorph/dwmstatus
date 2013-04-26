@@ -25,16 +25,12 @@ int main(void) {
 	time_t count6 = 0;
 	time_t count60 = 0;
 
+	network_init();
+
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
 		return 1;
 	}
-
-  FILE *f;
-  f = fopen(WIFI_DN,"r");
-  fscanf(f,"%ld",&rx_old); fclose(f);
-  f = fopen(WIFI_UP,"r");
-  fscanf(f,"%ld",&tx_old); fclose(f);
 
 	for (;;sleep(INTERVAL)) {
 		if (runevery(&count6, 6)) {
@@ -54,8 +50,6 @@ int main(void) {
 		}
 
 		net = network();		
-    rx_old = rx_new;
-    tx_old = tx_new;
 
 		status = smprintf("%s%s%s%s%s%s%s", avgs, core, mem, net, batt, datetime);
 		setstatus(status);
