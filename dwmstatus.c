@@ -13,19 +13,26 @@
 
 #include "config.h"
 #include "function.h"
+#include "pulse.h"
+
+static struct pulseaudio_t pulse;
 
 int main(void) {
 	char *status;
+	char *vol;
 	char *avgs;
 	char *core = NULL;
 	char *mem = NULL;
 	char *net;
 	char *batt = NULL;
 	char *datetime = NULL;
-	time_t count6 = 0;
+	time_t count10 = 0;
 	time_t count60 = 0;
 
 	network_init();
+
+	pulse_init(&pulse, "lolpulse");
+	pulse_connect(&pulse);
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -33,7 +40,7 @@ int main(void) {
 	}
 
 	for (;;sleep(INTERVAL)) {
-		if (runevery(&count6, 6)) {
+		if (runevery(&count10, 10)) {
 			free(avgs);
 			free(core);
 			free(mem);
@@ -49,14 +56,18 @@ int main(void) {
 			datetime = mktimes();
 		}
 
+		vol = volume(pulse);
 		net = network();		
+		status = smprintf("%s%s%s%s%s%s%s", vol, avgs, core, mem, net, batt, datetime);
 
-		status = smprintf("%s%s%s%s%s%s%s", avgs, core, mem, net, batt, datetime);
 		setstatus(status);
+
 		free(status);
 		free(net);
+		free(vol);
 	}
 
+	pulse_deinit(&pulse);
 	XCloseDisplay(dpy);
 	return 0;
 }
