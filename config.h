@@ -1,7 +1,7 @@
 #define BATT_LOW 11 // Upper threshold for urgent battery %
 #define LOAD_HI  1  // Lower threshold for urgent cpu load
 #define TEMP_HI  75 // Lower threshold for urgent core temp
-#define INTERVAL 2  // Sleeps for INTERVAL seconds each iter
+#define INTERVAL 1  // Sleeps for INTERVAL seconds each iter
 
 // Files read for system info:
 #define MEM_FILE  "/proc/meminfo"
@@ -15,14 +15,14 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
 
 // Music player daemon
-#define MPD_STR      " \x04Î %.50s \x09| "   // mpd playing
-#define MPD_P_STR    " \x04Î Paused \x09| "  //  "  paused
-#define MPD_S_STR    " \x04Î Stopped \x09| " //  "  stopped
-#define MPD_NONE_STR " \x03Î Failed \x09| "  //  "  not running
+#define MPD_STR      " \x04Î %.50s \x09|"   // mpd playing
+#define MPD_P_STR    " \x04Î Paused \x09|"  //  "  paused
+#define MPD_S_STR    " \x04Î Stopped \x09|" //  "  stopped
+#define MPD_NONE_STR " \x03Î Failed \x09|"  //  "  not running
 
 // Volume
-#define VOL_STR      "\x07Ô %d%% \x09| " // volume in dB
-#define VOL_MUTE_STR "\x03Ô %d%% \x09| " // muted
+#define VOL_STR      " \x07Ô %d%% \x09| " // volume in dB
+#define VOL_MUTE_STR " \x03Ô %d%% \x09| " // muted
 
 // Core load, temperature, and memory usage
 #define CPU_STR      "\x01Ï %02.f %02.f %02.f  " // cpu load
