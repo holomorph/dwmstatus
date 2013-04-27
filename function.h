@@ -177,3 +177,34 @@ char *mktimes(void) {
 	tmsleep = 60 - timtm->tm_sec;
 	return smprintf("%s", buf);
 }
+
+char *print_mpd(struct mpd_connection *conn) {
+	char *mpdstr = NULL;
+	mpd_command_list_begin(conn, true);
+	mpd_send_status(conn);
+	mpd_send_current_song(conn);
+	mpd_command_list_end(conn);
+	struct mpd_status *status = mpd_recv_status(conn);
+
+	if (!status)
+		mpdstr = smprintf(MPD_NONE_STR);
+	else
+		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
+			mpd_response_next(conn);
+			struct mpd_song *song = mpd_recv_song(conn);
+			const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
+			if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
+			mpdstr = smprintf(MPD_STR, title);
+			mpd_song_free(song);
+		}
+		else if (mpd_status_get_state(status) == MPD_STATE_PAUSE) {
+			mpdstr = smprintf(MPD_P_STR);
+		}
+		else if (mpd_status_get_state(status) == MPD_STATE_STOP) {
+			mpdstr = smprintf(MPD_S_STR);
+		}
+
+	mpd_status_free(status);
+	mpd_response_finish(conn);
+	return mpdstr;
+}

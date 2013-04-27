@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <mpd/client.h>
 #include <X11/Xlib.h>
 
 #include "config.h"
@@ -19,6 +20,7 @@ static struct pulseaudio_t pulse;
 
 int main(void) {
 	char *status;
+	char *mpd;
 	char *vol;
 	char *avgs;
 	char *core = NULL;
@@ -33,6 +35,8 @@ int main(void) {
 
 	pulse_init(&pulse, "lolpulse");
 	pulse_connect(&pulse);
+
+	struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -56,17 +60,20 @@ int main(void) {
 			datetime = mktimes();
 		}
 
+		mpd = print_mpd(conn);
 		vol = volume(pulse);
 		net = network();		
-		status = smprintf("%s%s%s%s%s%s%s", vol, avgs, core, mem, net, batt, datetime);
+		status = smprintf("%s%s%s%s%s%s%s%s", mpd, vol, avgs, core, mem, net, batt, datetime);
 
 		setstatus(status);
 
 		free(status);
 		free(net);
 		free(vol);
+		free(mpd);
 	}
 
+	mpd_connection_free(conn);
 	pulse_deinit(&pulse);
 	XCloseDisplay(dpy);
 	return 0;
