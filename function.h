@@ -189,6 +189,7 @@ char *print_mpd(struct mpd_connection *conn) {
 	if (!status)
 		mpdstr = smprintf(MPD_NONE_STR);
 	else
+	{
 		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
 			mpd_response_next(conn);
 			struct mpd_song *song = mpd_recv_song(conn);
@@ -197,14 +198,13 @@ char *print_mpd(struct mpd_connection *conn) {
 			mpdstr = smprintf(MPD_STR, title);
 			mpd_song_free(song);
 		}
-		else if (mpd_status_get_state(status) == MPD_STATE_PAUSE) {
+		else if (mpd_status_get_state(status) == MPD_STATE_PAUSE)
 			mpdstr = smprintf(MPD_P_STR);
-		}
-		else if (mpd_status_get_state(status) == MPD_STATE_STOP) {
+		else if (mpd_status_get_state(status) == MPD_STATE_STOP)
 			mpdstr = smprintf(MPD_S_STR);
-		}
+		mpd_status_free(status);
+	}
 
-	mpd_status_free(status);
 	mpd_response_finish(conn);
 	return mpdstr;
 }
