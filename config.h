@@ -15,30 +15,30 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
 
 // Music player daemon
-#define MPD_STR      " \x04Î %.50s \x09|"   // mpd playing
-#define MPD_P_STR    " \x04Î Paused \x09|"  //  "  paused
-#define MPD_S_STR    " \x04Î Stopped \x09|" //  "  stopped
-#define MPD_NONE_STR " \x03Î Failed \x09|"  //  "  not running
+#define MPD_STR      " \x04\uE012 %.50s \x09|"   // mpd playing
+#define MPD_P_STR    " \x04\uE012 Paused \x09|"  //  "  paused
+#define MPD_S_STR    " \x04\uE012 Stopped \x09|" //  "  stopped
+#define MPD_NONE_STR " \x03\uE012 Failed \x09|"  //  "  not running
 
 // Volume
-#define VOL_STR      " \x07Ô %d%% \x09| " // volume in dB
-#define VOL_MUTE_STR " \x03Ô %d%% \x09| " // muted
+#define VOL_STR      " \x07\uE010 %d%% \x09| " // volume in dB
+#define VOL_MUTE_STR " \x03\uE010 %d%% \x09| " // muted
 
 // Core load, temperature, and memory usage
-#define CPU_STR      "\x01Ï %02.f %02.f %02.f  " // cpu load
-#define CPU_HI_STR   "\x03Ï %02.f %02.f %02.f  " // cpu load urgent > CPU_HI
-#define TEMP_STR     "\x01Ç %dC  "          // core temp (C)
-#define TEMP_HI_STR  "\x03Ç %dC  "          // core temp urgent > CORETEMP_HI
-#define MEM_STR      "\x01Þ %dM \x09|\x01 " // memory usage
+#define CPU_STR      "\x01\uE006 %02.f %02.f %02.f  " // cpu load
+#define CPU_HI_STR   "\x03\uE006 %02.f %02.f %02.f  " // cpu load urgent > CPU_HI
+#define TEMP_STR     "\x01\uE007 %dC  "          // core temp (C)
+#define TEMP_HI_STR  "\x03\uE007 %dC  "          // core temp urgent > CORETEMP_HI
+#define MEM_STR      "\x01\uE008 %dM \x09|\x01 " // memory usage
 
 // Wireless usage (wlan0)
-#define WIFI_STR     "\x07Ð %-4s \x06Ñ %-3s \x09|\x01 " // wlan0 down/up rates
+#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09|\x01 " // wlan0 down/up rates
 
 // Battery status, level, time remaining
-#define BAT_STR      "\x0AÁ %d%% (%02.2f) " // battery discharging & time left
-#define BAT_LOW_STR  "\x03Á %d%% (%02.2f) " //    "    urgent if below BAT_LOW
-#define BAT_CHRG_STR "\x0AÅ %d%% "          //    "    charging
-#define BAT_FULL_STR "\x0AÀ %d%% "          //    "    full
+#define BAT_STR      "\x0A\uE00D %d%% (%02.2f) " // battery discharging & time left
+#define BAT_LOW_STR  "\x03\uE00C %d%% (%02.2f) " //    "    urgent if below BAT_LOW
+#define BAT_CHRG_STR "\x0A\uE00E %d%% "          //    "    charging
+#define BAT_FULL_STR "\x0A\uE00F %d%% "          //    "    full
 
 // Date-time
-#define DATE_TIME_STR "\x05 Õ %a %d %b %H:%M "
+#define DATE_TIME_STR "\x05 \uE011 %a %d %b %H:%M "
