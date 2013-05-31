@@ -17,15 +17,16 @@
 #include "pulse.h"
 
 static struct pulseaudio_t pulse;
+/* static struct mpd_connection *conn; */
 
 int main(void) {
-	char *status;
-	char *mpd;
-	char *vol;
-	char *avgs;
+	char *status = NULL;
+	char *mpd = NULL;
+	char *vol = NULL;
+	char *avgs = NULL;
 	char *core = NULL;
 	char *mem = NULL;
-	char *net;
+	char *net = NULL;
 	char *batt = NULL;
 	char *datetime = NULL;
 	time_t count10 = 0;
@@ -62,7 +63,7 @@ int main(void) {
 
 		mpd = print_mpd(conn);
 		vol = volume(pulse);
-		net = network();		
+		net = network();
 		status = smprintf("%s%s%s%s%s%s%s%s", mpd, vol, avgs, core, mem, net, batt, datetime);
 
 		setstatus(status);
