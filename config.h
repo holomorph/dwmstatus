@@ -1,7 +1,7 @@
 #define BATT_LOW 11 // Upper threshold for urgent battery %
 #define LOAD_HI  1  // Lower threshold for urgent cpu load
 #define TEMP_HI  75 // Lower threshold for urgent core temp
-#define INTERVAL 1  // Sleeps for INTERVAL seconds each iter
+#define INTERVAL 2  // Sleeps for INTERVAL seconds each iter
 
 // Files read for system info:
 #define MEM_FILE  "/proc/meminfo"
