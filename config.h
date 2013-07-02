@@ -15,10 +15,10 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
 
 // Music player daemon
-#define MPD_STR      " \x04\uE012 %.50s \x09|"   // mpd playing
-#define MPD_P_STR    " \x04\uE012 Paused \x09|"  //  "  paused
-#define MPD_S_STR    " \x04\uE012 Stopped \x09|" //  "  stopped
-#define MPD_NONE_STR " \x03\uE012 Failed \x09|"  //  "  not running
+#define MPD_STR      "\x04\uE012 %.50s \x09|"   // mpd playing
+#define MPD_P_STR    "\x04\uE012 Paused \x09|"  //  "  paused
+#define MPD_S_STR    "\x04\uE012 Stopped \x09|" //  "  stopped
+#define MPD_NONE_STR "\x03\uE012 Failed \x09|"  //  "  not running
 
 // Volume
 #define VOL_STR      " \x07\uE010 %d%% \x09| " // volume in dB
@@ -41,4 +41,4 @@
 #define BAT_FULL_STR "\x0A\uE00F %d%% "          //    "    full
 
 // Date-time
-#define DATE_TIME_STR "\x05 \uE011 %a %d %b %H:%M "
+#define DATE_TIME_STR "\x05 \uE011 %a %d %b %H:%M"
