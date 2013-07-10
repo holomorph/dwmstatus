@@ -8,36 +8,47 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <dirent.h>
 
 #include <mpd/client.h>
 #include <X11/Xlib.h>
+
+int getloadavg(double loadavg[], int nelem);
+
+static Display *dpy;
+static long rx_old, rx_new;
+static long tx_old, tx_new;
+static int tmsleep = 0;
 
 #include "config.h"
 #include "function.h"
 #include "pulse.h"
 
-static struct pulseaudio_t pulse;
+/* static struct pulseaudio_t pulse; */
 /* static struct mpd_connection *conn; */
 
 int main(void) {
 	char *status = NULL;
-	char *mpd = NULL;
-	char *vol = NULL;
+	char *mail = NULL;
+	/* char *mpd = NULL; */
+	/* char *vol = NULL; */
 	char *avgs = NULL;
 	char *core = NULL;
 	char *mem = NULL;
-	char *net = NULL;
-	char *batt = NULL;
+	/* char *net = NULL; */
+	/* char *batt = NULL; */
 	char *datetime = NULL;
+	char *home = strcat(getenv("HOME"), MAIL_DIR);
 	time_t count10 = 0;
 	time_t count60 = 0;
+	time_t count180 = 0;
 
-	network_init();
+	/* network_init(); */
 
-	pulse_init(&pulse, "lolpulse");
-	pulse_connect(&pulse);
+	/* pulse_init(&pulse, "lolpulse"); */
+	/* pulse_connect(&pulse); */
 
-	struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000);
+	/* struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000); */
 
 	if (!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "dwmstatus: cannot open display.\n");
@@ -49,33 +60,36 @@ int main(void) {
 			free(avgs);
 			free(core);
 			free(mem);
-			free(batt);
+			/* free(batt); */
 			avgs = loadavg();
 			core = coretemp();
 			mem = memory();
-			batt = battery();
+			/* batt = battery(); */
 		}
-
 		if (runevery(&count60, tmsleep)) {
 			free(datetime);
 			datetime = mktimes();
+			if (runevery(&count180, 180)) {
+				free(mail);
+				mail = new_mail(home);
+			}
 		}
 
-		mpd = print_mpd(conn);
-		vol = volume(pulse);
-		net = network();
-		status = smprintf("%s%s%s%s%s%s%s%s", mpd, vol, avgs, core, mem, net, batt, datetime);
+		/* mpd = print_mpd(conn); */
+		/* vol = volume(pulse); */
+		/* net = network(); */
+		status = smprintf("%s%s%s%s%s", mail, avgs, core, mem, datetime);
 
 		setstatus(status);
 
 		free(status);
-		free(net);
-		free(vol);
-		free(mpd);
+		/* free(net); */
+		/* free(vol); */
+		/* free(mpd); */
 	}
 
-	mpd_connection_free(conn);
-	pulse_deinit(&pulse);
+	/* mpd_connection_free(conn); */
+	/* pulse_deinit(&pulse); */
 	XCloseDisplay(dpy);
 	return 0;
 }

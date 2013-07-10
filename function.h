@@ -1,7 +1,5 @@
 /* xorg */
 
-static Display *dpy;
-
 void setstatus(char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
 	XSync(dpy, False);
@@ -17,7 +15,6 @@ char *smprintf(char *fmt, ...) {
 	va_start(fmtargs, fmt);
 	len = vsnprintf(NULL, 0, fmt, fmtargs);
 	va_end(fmtargs);
-
 	ret = malloc(++len);
 	if (ret == NULL) {
 		perror("malloc");
@@ -27,12 +24,12 @@ char *smprintf(char *fmt, ...) {
 	va_start(fmtargs, fmt);
 	vsnprintf(ret, len, fmt, fmtargs);
 	va_end(fmtargs);
-
 	return ret;
 }
 
 int runevery(time_t *ltime, int sec) {
 	time_t now = time(NULL);
+
 	if (difftime(now, *ltime) >= sec) {
 		*ltime = now;
 		return(1);
@@ -42,8 +39,6 @@ int runevery(time_t *ltime, int sec) {
 }
 
 /* status line functions */
-
-int getloadavg(double loadavg[], int nelem);
 
 char *loadavg(void) {
 	double avgs[3];
@@ -60,6 +55,8 @@ char *coretemp(void) {
 	FILE *f;
 	int temp;
 
+	if(!(f = fopen(CPU_TEMP0, "r")))
+		return smprintf("");
 	f = fopen(CPU_TEMP0, "r");
 	fscanf(f, "%d", &temp);
 	fclose(f);
@@ -70,7 +67,6 @@ char *coretemp(void) {
 	else
 		return smprintf(TEMP_STR, temp);
 }
-
 
 char *memory(void) {
 	FILE *f;
@@ -90,20 +86,36 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-static long rx_old, tx_old, rx_new, tx_new;
-
-void network_init(void) {
+int network_init(void) {
 	FILE *f;
-	f = fopen(WIFI_DN,"r");
-	fscanf(f,"%ld", &rx_old); fclose(f);
-	f = fopen(WIFI_UP,"r");
-	fscanf(f,"%ld", &tx_old); fclose(f);
+
+	if(!(f = fopen(WIFI_DN, "r"))) {
+		fprintf(stderr, "cannot read %s\n", WIFI_DN);
+		return 1;
+	}
+	else {
+		fscanf(f,"%ld", &rx_old);
+		fclose(f);
+	}
+	if(!(f = fopen(WIFI_UP, "r"))) {
+		fprintf(stderr, "cannot read %s\n", WIFI_UP);
+		return 1;
+	}
+	else {
+		fscanf(f,"%ld", &tx_old);
+		fclose(f);
+	}
+	return 0;
 }
 
 char *network(void) {
 	FILE *f;
 	char rxk[7], txk[7];
 
+	if(!(f = fopen(WIFI_DN, "r"))) {
+		fprintf(stderr, "dwmstatus: cannot read %s\n", WIFI_DN);
+		exit(1);
+	}
 	f = fopen(WIFI_DN,"r");
 	fscanf(f, "%ld", &rx_new);
 	fclose(f);
@@ -119,12 +131,16 @@ char *network(void) {
 }
 
 char *battery(void) {
-	FILE *f;
+	FILE *f = NULL;
 	char state[20];
 	int percent;
 	float timeleft;
 	long now, full, power;
 
+	/* if(!(f = fopen(BATT_NOW, "r"))) { */
+	/* 	fprintf(stderr, "dwmstatus: cannot read %s\n", BATT_NOW); */
+	/* 	exit(1); */
+	/* } */
 	f = fopen(BATT_NOW,"r");
 	fscanf(f,"%ld", &now);
 	fclose(f);
@@ -154,8 +170,6 @@ char *battery(void) {
 	}
 }
 
-static int tmsleep = 0;
-
 char *mktimes(void) {
 	char buf[129];
 	time_t tim;
@@ -180,14 +194,18 @@ char *mktimes(void) {
 
 char *print_mpd(struct mpd_connection *conn) {
 	char *mpdstr = NULL;
+	/* need error handling !!!! */
 	mpd_command_list_begin(conn, true);
 	mpd_send_status(conn);
 	mpd_send_current_song(conn);
 	mpd_command_list_end(conn);
 	struct mpd_status *status = mpd_recv_status(conn);
 
-	if (!status)
+	if (!status) {
 		mpdstr = smprintf(MPD_NONE_STR);
+		perror("mpd");
+		return smprintf("");
+	}
 	else
 	{
 		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
@@ -207,4 +225,24 @@ char *print_mpd(struct mpd_connection *conn) {
 
 	mpd_response_finish(conn);
 	return mpdstr;
+}
+
+char *new_mail(char *dir) {
+	int n = 0;
+	DIR *d = NULL;
+	struct dirent *rf = NULL;
+
+	if(!(d = opendir(dir))) {
+		fprintf(stderr, "cannot read directory %s\n", dir);
+		exit(1);
+	}
+	while ((rf = readdir(d)) != NULL) {
+		if (strcmp(rf->d_name, ".") != 0 && strcmp(rf->d_name, "..") != 0)
+			n++;
+	}
+	closedir(d);
+	if (n == 0)
+		return smprintf("");
+	else
+		return smprintf(MAIL_STR, n);
 }

@@ -5,7 +5,7 @@
 
 // Files read for system info:
 #define MEM_FILE  "/proc/meminfo"
-#define AUD_FILE  "/run/user/1000/pulse/volume_info"
+#define MAIL_DIR  "/.mutt/mail/inbox/new"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
@@ -13,6 +13,9 @@
 #define WIFI_DN   "/sys/class/net/wlp2s0/statistics/rx_bytes"
 #define WIFI_UP   "/sys/class/net/wlp2s0/statistics/tx_bytes"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
+
+// Mail
+#define MAIL_STR     "\x0A\uE013 %d \x09| "
 
 // Music player daemon
 #define MPD_STR      "\x04\uE012 %.50s \x09|"   // mpd playing
