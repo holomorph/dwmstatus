@@ -10,9 +10,14 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <dirent.h>
-
 #include <mpd/client.h>
 #include <X11/Xlib.h>
+
+/* static void cleanup(void); */
+/* static int runevery(time_t *ltime, int sec); */
+/* static void setstatus(char *str); */
+/* static void sighandler(int signum); */
+/* static char *smprintf(char *fmt, ...); */
 
 static Display *dpy;
 static long rx_old, rx_new;
@@ -35,23 +40,27 @@ static char *date;
 #include "function.h"
 /* #include "pulse.h" */
 
-static void sighandler(int signum) {
+void cleanup(void) {
+	free(mail);
+	/* free(mpd); */
+	/* free(vol); */
+	free(avgs);
+	free(core);
+	free(mem);
+	free(net);
+	free(batt);
+	free(date);
+	free(status);
+	/* mpd_connection_free(conn); */
+	/* pulse_deinit(&pulse); */
+	XCloseDisplay(dpy);
+}
+
+void sighandler(int signum) {
 	switch(signum) {
 		case SIGINT:
 		case SIGTERM:
-			free(mail);
-			/* free(mpd); */
-			/* free(vol); */
-			free(avgs);
-			free(core);
-			free(mem);
-			free(net);
-			free(batt);
-			free(date);
-			free(status);
-			/* mpd_connection_free(conn); */
-			/* pulse_deinit(&pulse); */
-			XCloseDisplay(dpy);
+			cleanup();
 			exit(EXIT_SUCCESS);
 	}
 }
@@ -114,8 +123,6 @@ int main(void) {
 		setstatus(status);
 	}
 
-	/* mpd_connection_free(conn); */
-	/* pulse_deinit(&pulse); */
-	XCloseDisplay(dpy);
+	cleanup();
 	return 0;
 }

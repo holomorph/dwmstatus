@@ -18,7 +18,7 @@ char *smprintf(char *fmt, ...) {
 	ret = malloc(++len);
 	if (ret == NULL) {
 		perror("malloc");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	va_start(fmtargs, fmt);
@@ -32,10 +32,10 @@ int runevery(time_t *ltime, int sec) {
 
 	if (difftime(now, *ltime) >= sec) {
 		*ltime = now;
-		return(1);
+		return EXIT_FAILURE;
 	}
 	else
-		return(0);
+		return EXIT_SUCCESS;
 }
 
 /* status line functions */
