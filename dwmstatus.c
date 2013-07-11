@@ -24,10 +24,10 @@ static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
 /* static struct pulseaudio_t pulse; */
-/* static struct mpd_connection *conn; */
+static struct mpd_connection *conn;
 static char *status;
 static char *mail;
-/* static char *mpd; */
+static char *mpd;
 /* static char *vol; */
 static char *avgs;
 static char *core;
@@ -42,7 +42,7 @@ static char *date;
 
 void cleanup(void) {
 	free(mail);
-	/* free(mpd); */
+	free(mpd);
 	/* free(vol); */
 	free(avgs);
 	free(core);
@@ -51,7 +51,7 @@ void cleanup(void) {
 	free(batt);
 	free(date);
 	free(status);
-	/* mpd_connection_free(conn); */
+	mpd_connection_free(conn);
 	/* pulse_deinit(&pulse); */
 	XCloseDisplay(dpy);
 }
@@ -79,16 +79,16 @@ int main(void) {
 /* 	pulse_init(&pulse, "lolpulse"); */
 /* 	pulse_connect(&pulse); */
 
-/* 	conn = mpd_connection_new(NULL, 0, 30000); */
-/* 	if(mpd_connection_get_error(conn)) { */
-/* 		fprintf(stderr, "failed to connect to mpd: %s\n", */
-/* 				mpd_connection_get_error_message(conn)); */
-/* 		return 1; */
-/* 	} */
+	conn = mpd_connection_new(NULL, 0, 30000);
+	if(mpd_connection_get_error(conn)) {
+		fprintf(stderr, "failed to connect to mpd: %s\n",
+				mpd_connection_get_error_message(conn));
+		return EXIT_FAILURE;
+	}
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	for(;;sleep(INTERVAL)) {
@@ -111,18 +111,18 @@ int main(void) {
 			}
 		}
 
-		/* free(mpd); */
+		free(mpd);
 		/* free(vol); */
 		free(net);
 		free(status);
-		/* mpd = print_mpd(conn); */
+		mpd = print_mpd(conn);
 		/* vol = volume(pulse); */
 		net = network();
-		status = smprintf("%s%s%s%s%s%s%s", mail, avgs, core, mem, net, batt, date);
+		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpd, avgs, core, mem, net, batt, date);
 
 		setstatus(status);
 	}
 
 	cleanup();
-	return 0;
+	return EXIT_SUCCESS;
 }

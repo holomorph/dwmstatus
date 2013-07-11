@@ -45,7 +45,7 @@ char *loadavg(void) {
 
 	if (getloadavg(avgs, 3) < 0) {
 		perror("getloadavg");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	return smprintf(CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
 }
@@ -90,7 +90,7 @@ void network_init(void) {
 
 	if(!(f = fopen(WIFI_DN, "r"))) {
 		fprintf(stderr, "cannot read %s\n", WIFI_DN);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	else {
 		fscanf(f,"%ld", &rx_old);
@@ -98,7 +98,7 @@ void network_init(void) {
 	}
 	if(!(f = fopen(WIFI_UP, "r"))) {
 		fprintf(stderr, "cannot read %s\n", WIFI_UP);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	else {
 		fscanf(f,"%ld", &tx_old);
@@ -181,12 +181,12 @@ char *mktimes(void) {
 	timtm = localtime(&tim);
 	if (timtm == NULL) {
 		perror("localtime");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	if (!strftime(buf, sizeof(buf)-1, DATE_TIME_STR, timtm)) {
 		fprintf(stderr, "strftime == 0\n");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	tmsleep = 60 - timtm->tm_sec;
@@ -196,23 +196,19 @@ char *mktimes(void) {
 char *print_mpd(struct mpd_connection *conn) {
 	if(mpd_connection_get_error(conn)) {
 		fprintf(stderr, "mpd connection interrupted\n");
-		if(!(mpd_connection_clear_error(conn)))
-			fprintf(stderr, "cannot clear error!\n");
 		return smprintf(MPD_NONE_STR);
 	}
 
 	char *mpdstr = NULL;
-	/* need error handling !!!! */
 	mpd_command_list_begin(conn, true);
 	mpd_send_status(conn);
 	mpd_send_current_song(conn);
 	mpd_command_list_end(conn);
 	struct mpd_status *status = mpd_recv_status(conn);
 
-	if (status == NULL) {
+	if(status == NULL) {
 		mpdstr = smprintf(MPD_NONE_STR);
 		fprintf(stderr, "null mpd status\n");
-		/* return smprintf(""); */
 	}
 	else {
 		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
@@ -229,7 +225,6 @@ char *print_mpd(struct mpd_connection *conn) {
 			mpdstr = smprintf(MPD_S_STR);
 		mpd_status_free(status);
 	}
-
 	mpd_response_finish(conn);
 	return mpdstr;
 }
@@ -241,7 +236,7 @@ char *new_mail(char *dir) {
 
 	if(!(d = opendir(dir))) {
 		fprintf(stderr, "cannot read directory %s\n", dir);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	while ((rf = readdir(d)) != NULL) {
 		if (strcmp(rf->d_name, ".") != 0 && strcmp(rf->d_name, "..") != 0)
