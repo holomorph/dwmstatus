@@ -1,9 +1,9 @@
-#define BATT_LOW 11 // Upper threshold for urgent battery %
-#define LOAD_HI  1  // Lower threshold for urgent cpu load
-#define TEMP_HI  75 // Lower threshold for urgent core temp
-#define INTERVAL 2  // Sleeps for INTERVAL seconds each iter
+#define BATT_LOW 11 /* Upper threshold for urgent battery percent */
+#define LOAD_HI  1  /* Lower threshold for urgent cpu load */
+#define TEMP_HI  75 /* Lower threshold for urgent core temp */
+#define INTERVAL 2  /* Sleeps for INTERVAL seconds each iter */
 
-// Files read for system info:
+/* files read for system info */
 #define MEM_FILE  "/proc/meminfo"
 #define AUD_FILE  "/run/user/1000/pulse/volume_info"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
@@ -14,31 +14,31 @@
 #define WIFI_UP   "/sys/class/net/wlp2s0/statistics/tx_bytes"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
 
-// Music player daemon
-#define MPD_STR      "\x04\uE012 %.50s \x09|"   // mpd playing
-#define MPD_P_STR    "\x04\uE012 Paused \x09|"  //  "  paused
-#define MPD_S_STR    "\x04\uE012 Stopped \x09|" //  "  stopped
-#define MPD_NONE_STR "\x03\uE012 Failed \x09|"  //  "  not running
+/* mpd */
+#define MPD_STR      "\x04\uE012 %.50s \x09|"
+#define MPD_P_STR    "\x04\uE012 Paused \x09|"
+#define MPD_S_STR    "\x04\uE012 Stopped \x09|"
+#define MPD_NONE_STR "\x03\uE012 Failed \x09|"
 
-// Volume
-#define VOL_STR      " \x07\uE010 %d%% \x09| " // volume in dB
-#define VOL_MUTE_STR " \x03\uE010 %d%% \x09| " // muted
+/* volume via pulseaudio */
+#define VOL_STR      " \x07\uE010 %d%% \x09| "
+#define VOL_MUTE_STR " \x03\uE010 %d%% \x09| "
 
-// Core load, temperature, and memory usage
-#define CPU_STR      "\x01\uE006 %02.f %02.f %02.f  " // cpu load
-#define CPU_HI_STR   "\x03\uE006 %02.f %02.f %02.f  " // cpu load urgent > CPU_HI
-#define TEMP_STR     "\x01\uE007 %dC  "          // core temp (C)
-#define TEMP_HI_STR  "\x03\uE007 %dC  "          // core temp urgent > CORETEMP_HI
-#define MEM_STR      "\x01\uE008 %dM \x09|\x01 " // memory usage
+/* load avgs, core temperature, & memory usage */
+#define CPU_STR      "\x01\uE006 %02.f %02.f %02.f  "
+#define CPU_HI_STR   "\x03\uE006 %02.f %02.f %02.f  "
+#define TEMP_STR     "\x01\uE007 %dC  "
+#define TEMP_HI_STR  "\x03\uE007 %dC  "
+#define MEM_STR      "\x01\uE008 %dM \x09|\x01 "
 
-// Wireless usage (wlan0)
-#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09|\x01 " // wlan0 down/up rates
+/* network rates */
+#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09|\x01 "
 
-// Battery status, level, time remaining
-#define BAT_STR      "\x0A\uE00D %d%% (%02.2f) " // battery discharging & time left
-#define BAT_LOW_STR  "\x03\uE00B %d%% (%02.2f) " //    "    urgent if below BAT_LOW
-#define BAT_CHRG_STR "\x0A\uE00E %d%% "          //    "    charging
-#define BAT_FULL_STR "\x0A\uE00F %d%% "          //    "    full
+/* battery status, level, & time remaining */
+#define BAT_STR      "\x0A\uE00D %d%% (%02.2f) "
+#define BAT_LOW_STR  "\x03\uE00B %d%% (%02.2f) "
+#define BAT_CHRG_STR "\x0A\uE00E %d%% "
+#define BAT_FULL_STR "\x0A\uE00F %d%% "
 
-// Date-time
+/* date */
 #define DATE_TIME_STR "\x05 \uE011 %a %d %b %H:%M"
