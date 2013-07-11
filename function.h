@@ -47,7 +47,6 @@ char *loadavg(void) {
 		perror("getloadavg");
 		exit(1);
 	}
-
 	return smprintf(CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
 }
 
@@ -195,6 +194,13 @@ char *mktimes(void) {
 }
 
 char *print_mpd(struct mpd_connection *conn) {
+	if(mpd_connection_get_error(conn)) {
+		fprintf(stderr, "mpd connection interrupted\n");
+		if(!(mpd_connection_clear_error(conn)))
+			fprintf(stderr, "cannot clear error!\n");
+		return smprintf(MPD_NONE_STR);
+	}
+
 	char *mpdstr = NULL;
 	/* need error handling !!!! */
 	mpd_command_list_begin(conn, true);
@@ -203,13 +209,12 @@ char *print_mpd(struct mpd_connection *conn) {
 	mpd_command_list_end(conn);
 	struct mpd_status *status = mpd_recv_status(conn);
 
-	if (!status) {
+	if (status == NULL) {
 		mpdstr = smprintf(MPD_NONE_STR);
-		perror("mpd");
-		return smprintf("");
+		fprintf(stderr, "null mpd status\n");
+		/* return smprintf(""); */
 	}
-	else
-	{
+	else {
 		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
 			mpd_response_next(conn);
 			struct mpd_song *song = mpd_recv_song(conn);

@@ -13,49 +13,77 @@
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 
+int getloadavg(double loadavg[], int nelem);
+
 static Display *dpy;
 static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
-
-int getloadavg(double loadavg[], int nelem);
+/* static struct pulseaudio_t pulse; */
+static struct mpd_connection *conn;
+static char *status;
+static char *mail;
+static char *mpd;
+/* static char *vol; */
+static char *avgs;
+static char *core;
+static char *mem;
+static char *net;
+static char *batt;
+static char *date;
 
 #include "config.h"
 #include "function.h"
-#include "pulse.h"
+/* #include "pulse.h" */
 
-/* static struct pulseaudio_t pulse; */
-/* static struct mpd_connection *conn; */
+static void sighandler(int signum) {
+	switch(signum) {
+		case SIGINT:
+		case SIGTERM:
+			free(mail);
+			free(mpd);
+			/* free(vol); */
+			free(avgs);
+			free(core);
+			free(mem);
+			free(net);
+			free(batt);
+			free(date);
+			free(status);
+			mpd_connection_free(conn);
+			/* pulse_deinit(&pulse); */
+			XCloseDisplay(dpy);
+			exit(EXIT_SUCCESS);
+	}
+}
 
 int main(void) {
-	char *status = NULL;
-	char *mail = NULL;
-	/* char *mpd = NULL; */
-	/* char *vol = NULL; */
-	char *avgs = NULL;
-	char *core = NULL;
-	char *mem = NULL;
-	char *net = NULL;
-	char *batt = NULL;
-	char *datetime = NULL;
 	char *home = strcat(getenv("HOME"), MAIL_DIR);
 	time_t count10 = 0;
 	time_t count60 = 0;
 	time_t count180 = 0;
 
-	/* network_init(); */
+	signal(SIGTERM, sighandler);
+	signal(SIGINT, sighandler);
 
-	/* pulse_init(&pulse, "lolpulse"); */
-	/* pulse_connect(&pulse); */
+	network_init();
 
-	/* struct mpd_connection *conn = mpd_connection_new(NULL, 0, 30000); */
+/* 	pulse_init(&pulse, "lolpulse"); */
+/* 	pulse_connect(&pulse); */
 
-	if (!(dpy = XOpenDisplay(NULL))) {
-		fprintf(stderr, "dwmstatus: cannot open display.\n");
+	conn = mpd_connection_new(NULL, 0, 30000);
+	if(mpd_connection_get_error(conn)) {
+		fprintf(stderr, "failed to connect to mpd: %s\n",
+				mpd_connection_get_error_message(conn));
 		return 1;
 	}
 
-	for (;;sleep(INTERVAL)) {
+	if(!(dpy = XOpenDisplay(NULL))) {
+		fprintf(stderr, "cannot open display\n");
+		return 1;
+	}
+
+	for(;;sleep(INTERVAL)) {
 		if (runevery(&count10, 10)) {
 			free(avgs);
 			free(core);
@@ -66,29 +94,28 @@ int main(void) {
 			mem = memory();
 			batt = battery();
 		}
-		if (runevery(&count60, tmsleep)) {
-			free(datetime);
-			datetime = mktimes();
-			if (runevery(&count180, 180)) {
+		if(runevery(&count60, tmsleep)) {
+			free(date);
+			date = mktimes();
+			if(runevery(&count180, 180)) {
 				free(mail);
 				mail = new_mail(home);
 			}
 		}
 
-		/* mpd = print_mpd(conn); */
+		free(mpd);
+		/* free(vol); */
+		free(net);
+		free(status);
+		mpd = print_mpd(conn);
 		/* vol = volume(pulse); */
 		net = network();
-		status = smprintf("%s%s%s%s%s%s%s", mail, avgs, core, mem, net, batt, datetime);
+		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpd, avgs, core, mem, net, batt, date);
 
 		setstatus(status);
-
-		free(status);
-		free(net);
-		/* free(vol); */
-		/* free(mpd); */
 	}
 
-	/* mpd_connection_free(conn); */
+	mpd_connection_free(conn);
 	/* pulse_deinit(&pulse); */
 	XCloseDisplay(dpy);
 	return 0;
