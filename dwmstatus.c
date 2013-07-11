@@ -13,12 +13,12 @@
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 
-int getloadavg(double loadavg[], int nelem);
-
 static Display *dpy;
 static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
+
+int getloadavg(double loadavg[], int nelem);
 
 #include "config.h"
 #include "function.h"
@@ -35,8 +35,8 @@ int main(void) {
 	char *avgs = NULL;
 	char *core = NULL;
 	char *mem = NULL;
-	/* char *net = NULL; */
-	/* char *batt = NULL; */
+	char *net = NULL;
+	char *batt = NULL;
 	char *datetime = NULL;
 	char *home = strcat(getenv("HOME"), MAIL_DIR);
 	time_t count10 = 0;
@@ -60,11 +60,11 @@ int main(void) {
 			free(avgs);
 			free(core);
 			free(mem);
-			/* free(batt); */
+			free(batt);
 			avgs = loadavg();
 			core = coretemp();
 			mem = memory();
-			/* batt = battery(); */
+			batt = battery();
 		}
 		if (runevery(&count60, tmsleep)) {
 			free(datetime);
@@ -77,13 +77,13 @@ int main(void) {
 
 		/* mpd = print_mpd(conn); */
 		/* vol = volume(pulse); */
-		/* net = network(); */
-		status = smprintf("%s%s%s%s%s", mail, avgs, core, mem, datetime);
+		net = network();
+		status = smprintf("%s%s%s%s%s%s%s", mail, avgs, core, mem, net, batt, datetime);
 
 		setstatus(status);
 
 		free(status);
-		/* free(net); */
+		free(net);
 		/* free(vol); */
 		/* free(mpd); */
 	}

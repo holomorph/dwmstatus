@@ -86,12 +86,12 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-int network_init(void) {
+void network_init(void) {
 	FILE *f;
 
 	if(!(f = fopen(WIFI_DN, "r"))) {
 		fprintf(stderr, "cannot read %s\n", WIFI_DN);
-		return 1;
+		exit(1);
 	}
 	else {
 		fscanf(f,"%ld", &rx_old);
@@ -99,32 +99,33 @@ int network_init(void) {
 	}
 	if(!(f = fopen(WIFI_UP, "r"))) {
 		fprintf(stderr, "cannot read %s\n", WIFI_UP);
-		return 1;
+		exit(1);
 	}
 	else {
 		fscanf(f,"%ld", &tx_old);
 		fclose(f);
 	}
-	return 0;
 }
 
 char *network(void) {
 	FILE *f;
 	char rxk[7], txk[7];
 
-	if(!(f = fopen(WIFI_DN, "r"))) {
-		fprintf(stderr, "dwmstatus: cannot read %s\n", WIFI_DN);
-		exit(1);
+	if(!(f = fopen(WIFI_DN, "r")))
+		return smprintf("");
+	else {
+		fscanf(f, "%ld", &rx_new);
+		fclose(f);
 	}
-	f = fopen(WIFI_DN,"r");
-	fscanf(f, "%ld", &rx_new);
-	fclose(f);
-	f = fopen(WIFI_UP,"r");
-	fscanf(f, "%ld", &tx_new);
-	fclose(f);
+	if(!(f = fopen(WIFI_UP, "r")))
+		return smprintf("");
+	else {
+		fscanf(f, "%ld", &tx_new);
+		fclose(f);
+	}
 
-	sprintf(rxk,"%dK",(int)(rx_new-rx_old)/1024/INTERVAL);
-	sprintf(txk,"%dK",(int)(tx_new-tx_old)/1024/INTERVAL);
+	sprintf(rxk, "%dK", (int)(rx_new-rx_old)/1024/INTERVAL);
+	sprintf(txk, "%dK", (int)(tx_new-tx_old)/1024/INTERVAL);
 	rx_old = rx_new;
 	tx_old = tx_new;
 	return smprintf(WIFI_STR, rxk, txk);
@@ -132,41 +133,42 @@ char *network(void) {
 
 char *battery(void) {
 	FILE *f = NULL;
-	char state[20];
-	int percent;
-	float timeleft;
 	long now, full, power;
+	char status[11];
+	float timeleft;
+	int capacity;
 
-	/* if(!(f = fopen(BATT_NOW, "r"))) { */
-	/* 	fprintf(stderr, "dwmstatus: cannot read %s\n", BATT_NOW); */
-	/* 	exit(1); */
-	/* } */
-	f = fopen(BATT_NOW,"r");
-	fscanf(f,"%ld", &now);
+	if(!(f = fopen(BATT_NOW, "r")))
+		return smprintf("");
+	fscanf(f, "%ld", &now);
 	fclose(f);
-	f = fopen(BATT_FULL,"r");
-	fscanf(f,"%ld", &full);
+	if(!(f = fopen(BATT_FULL, "r")))
+		return smprintf("");
+	fscanf(f, "%ld", &full);
 	fclose(f);
-	f = fopen(BATT_STAT,"r");
-	fscanf(f,"%s", state);
+	if(!(f = fopen(BATT_STAT, "r")))
+		return smprintf("");
+	fscanf(f, "%s", status);
+	fclose(f);
+	if(!(f = fopen(BATT_CAP, "r")))
+		return smprintf("");
+	fscanf(f, "%d", &capacity);
 	fclose(f);
 
-	percent = now*100/full;
-	if (strncmp(state, "Charging", 8) == 0) {
-		return smprintf(BAT_CHRG_STR, percent);
-	}
-	else if (strncmp(state, "Full", 8) == 0) {
-		return smprintf(BAT_FULL_STR, percent);
-	}
+	if (strncmp(status, "Charging", 8) == 0)
+		return smprintf(BAT_CHRG_STR, capacity);
+	else if (strncmp(status, "Full", 8) == 0 || strncmp(status, "Unknown", 8) == 0)
+		return smprintf(BAT_FULL_STR, capacity);
 	else {
-		f = fopen(BATT_POW,"r");
-		fscanf(f,"%ld",&power);
+		if (!(f = fopen(BATT_POW,"r")))
+			return smprintf("");
+		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
-		if (percent < BATT_LOW)
-			return smprintf(BAT_LOW_STR, percent, timeleft);
+		if (capacity < BATT_LOW)
+			return smprintf(BAT_LOW_STR, capacity, timeleft);
 		else
-			return smprintf(BAT_STR, percent, timeleft);
+			return smprintf(BAT_STR, capacity, timeleft);
 	}
 }
 

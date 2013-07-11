@@ -10,6 +10,7 @@
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
+#define BATT_CAP  "/sys/class/power_supply/BAT1/capacity"
 #define WIFI_DN   "/sys/class/net/wlp2s0/statistics/rx_bytes"
 #define WIFI_UP   "/sys/class/net/wlp2s0/statistics/tx_bytes"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
