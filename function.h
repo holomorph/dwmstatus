@@ -192,13 +192,12 @@ char *mktimes(void) {
 	return smprintf("%s", buf);
 }
 
-char *print_mpd(struct mpd_connection *conn) {
+char *music(struct mpd_connection *conn) {
 	if(mpd_connection_get_error(conn)) {
 		fprintf(stderr, "mpd connection interrupted\n");
 		return smprintf(MPD_NONE_STR);
 	}
 
-	char *mpdstr = NULL;
 	mpd_command_list_begin(conn, true);
 	mpd_send_status(conn);
 	mpd_send_current_song(conn);
@@ -206,24 +205,31 @@ char *print_mpd(struct mpd_connection *conn) {
 	struct mpd_status *status = mpd_recv_status(conn);
 
 	if(status == NULL) {
-		mpdstr = smprintf(MPD_NONE_STR);
 		fprintf(stderr, "null mpd status\n");
+		mpd_response_finish(conn);
+		return smprintf(MPD_NONE_STR);
 	}
-	else {
-		if (mpd_status_get_state(status) == MPD_STATE_PLAY) {
+	char *mpdstr = NULL;
+	switch(mpd_status_get_state(status)) {
+		case MPD_STATE_PLAY:
 			mpd_response_next(conn);
 			struct mpd_song *song = mpd_recv_song(conn);
 			const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
 			if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
 			mpdstr = smprintf(MPD_STR, title);
 			mpd_song_free(song);
-		}
-		else if (mpd_status_get_state(status) == MPD_STATE_PAUSE)
+			break;
+		case MPD_STATE_PAUSE:
 			mpdstr = smprintf(MPD_P_STR);
-		else if (mpd_status_get_state(status) == MPD_STATE_STOP)
+			break;
+		case MPD_STATE_STOP:
 			mpdstr = smprintf(MPD_S_STR);
-		mpd_status_free(status);
+			break;
+		case MPD_STATE_UNKNOWN:
+			mpdstr = smprintf(MPD_NONE_STR);
+			fprintf(stderr, "mpd state unknown\n");
 	}
+	mpd_status_free(status);
 	mpd_response_finish(conn);
 	return mpdstr;
 }

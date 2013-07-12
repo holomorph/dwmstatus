@@ -115,7 +115,7 @@ int main(void) {
 		/* free(vol); */
 		free(net);
 		free(status);
-		mpd = print_mpd(conn);
+		mpd = music(conn);
 		/* vol = volume(pulse); */
 		net = network();
 		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpd, avgs, core, mem, net, batt, date);
