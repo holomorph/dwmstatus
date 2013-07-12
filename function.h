@@ -56,7 +56,6 @@ char *coretemp(void) {
 
 	if(!(f = fopen(CPU_TEMP0, "r")))
 		return smprintf("");
-	f = fopen(CPU_TEMP0, "r");
 	fscanf(f, "%d", &temp);
 	fclose(f);
 
@@ -73,7 +72,7 @@ char *memory(void) {
 
 	if(!(f = fopen(MEM_FILE, "r"))) {
 		fprintf(stderr, "cannot read %s\n", MEM_FILE);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	fscanf(f, "MemTotal:%d kB\n", &total);
 	fscanf(f, "MemFree:%d kB\n",  &free);
