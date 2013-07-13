@@ -192,7 +192,7 @@ char *mktimes(void) {
 	return smprintf("%s", buf);
 }
 
-int mpd_connect(void) {
+int mpd_init(void) {
 	if(!(mpd = malloc(sizeof(MpdClient)))) {
 		fprintf(stderr, "mpd malloc failed");
 		return EXIT_FAILURE;
@@ -253,13 +253,13 @@ char *music(void) {
 	return ret;
 }
 
-char *new_mail(char *dir) {
+char *new_mail(void) {
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
 
-	if(!(d = opendir(dir))) {
-		fprintf(stderr, "cannot read directory %s\n", dir);
+	if(!(d = opendir(MAIL_DIR))) {
+		fprintf(stderr, "cannot read directory %s\n", MAIL_DIR);
 		exit(EXIT_FAILURE);
 	}
 	while ((rf = readdir(d)) != NULL) {
