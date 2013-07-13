@@ -28,12 +28,12 @@ static Display *dpy;
 static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
-/* static struct pulseaudio_t pulse; */
+static struct pulseaudio_t pulse;
 static MpdClient *mpd;
 static char *status;
 static char *mail;
 static char *mpdstr;
-/* static char *vol; */
+static char *vol;
 static char *avgs;
 static char *core;
 static char *mem;
@@ -43,12 +43,12 @@ static char *date;
 
 #include "config.h"
 #include "function.h"
-/* #include "pulse.h" */
+#include "pulse.h"
 
 void cleanup(void) {
 	free(mail);
 	free(mpdstr);
-	/* free(vol); */
+	free(vol);
 	free(avgs);
 	free(core);
 	free(mem);
@@ -57,7 +57,7 @@ void cleanup(void) {
 	free(date);
 	free(status);
 	mpd_deinit();
-	/* pulse_deinit(&pulse); */
+	pulse_deinit(&pulse);
 	XCloseDisplay(dpy);
 }
 
@@ -71,7 +71,6 @@ void sighandler(int signum) {
 }
 
 int main(void) {
-	char *home = strcat(getenv("HOME"), MAIL_DIR);
 	time_t count10 = 0;
 	time_t count60 = 0;
 	time_t count180 = 0;
@@ -80,9 +79,11 @@ int main(void) {
 	signal(SIGINT, sighandler);
 
 	network_init();
-/* 	pulse_init(&pulse, "lolpulse"); */
-/* 	pulse_connect(&pulse); */
-	mpd_connect();
+
+	if(pulse_init(&pulse) != 0)
+		return EXIT_FAILURE;
+
+	mpd_init();
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
@@ -105,18 +106,18 @@ int main(void) {
 			date = mktimes();
 			if(runevery(&count180, 180)) {
 				free(mail);
-				mail = new_mail(home);
+				mail = new_mail();
 			}
 		}
 
 		free(mpdstr);
-		/* free(vol); */
+		free(vol);
 		free(net);
 		free(status);
 		mpdstr = music();
-		/* vol = volume(pulse); */
+		vol = ponyprint();
 		net = network();
-		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpdstr, avgs, core, mem, net, batt, date);
+		status = smprintf("%s%s%s%s%s%s%s%s%s", mail, mpdstr, vol, avgs, core, mem, net, batt, date);
 
 		setstatus(status);
 	}
