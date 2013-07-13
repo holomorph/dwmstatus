@@ -19,14 +19,14 @@
 #define MAIL_STR     "\x0A\uE013 %d \x09| "
 
 /* mpd */
-#define MPD_STR      "\x04\uE012 %.50s \x09|"
-#define MPD_P_STR    "\x04\uE012 Paused \x09|"
-#define MPD_S_STR    "\x04\uE012 Stopped \x09|"
-#define MPD_NONE_STR "\x03\uE012 Failed \x09|"
+#define MPD_STR      "\x04\uE012 %.50s \x09| "
+#define MPD_P_STR    "\x04\uE012 Paused \x09| "
+#define MPD_S_STR    "\x04\uE012 Stopped \x09| "
+#define MPD_NONE_STR "\x03\uE012 Failed \x09| "
 
 /* volume via pulseaudio */
-#define VOL_STR      " \x07\uE010 %d%% \x09| "
-#define VOL_MUTE_STR " \x03\uE010 %d%% \x09| "
+#define VOL_STR      "\x07\uE010 %d%% \x09| "
+#define VOL_MUTE_STR "\x03\uE010 %d%% \x09| "
 
 /* load avgs, core temperature, & memory usage */
 #define CPU_STR      "\x01\uE006 %02.f %02.f %02.f  "
