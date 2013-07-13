@@ -192,46 +192,65 @@ char *mktimes(void) {
 	return smprintf("%s", buf);
 }
 
-char *music(struct mpd_connection *conn) {
-	if(mpd_connection_get_error(conn)) {
+int mpd_connect(void) {
+	if(!(mpd = malloc(sizeof(MpdClient)))) {
+		fprintf(stderr, "mpd malloc failed");
+		return EXIT_FAILURE;
+	}
+	mpd->conn = mpd_connection_new(NULL, 0, 30000);
+	if(mpd_connection_get_error(mpd->conn)) {
+		fprintf(stderr, "failed to connect to mpd: %s\n",
+				mpd_connection_get_error_message(mpd->conn));
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
+}
+
+void mpd_deinit(void) {
+	mpd_connection_free(mpd->conn);
+	free(mpd);
+}
+
+char *music(void) {
+	if(mpd_connection_get_error(mpd->conn)) {
 		fprintf(stderr, "mpd connection interrupted\n");
 		return smprintf(MPD_NONE_STR);
 	}
 
-	mpd_command_list_begin(conn, true);
-	mpd_send_status(conn);
-	mpd_send_current_song(conn);
-	mpd_command_list_end(conn);
-	struct mpd_status *status = mpd_recv_status(conn);
+	mpd_command_list_begin(mpd->conn, true);
+	mpd_send_status(mpd->conn);
+	mpd_send_current_song(mpd->conn);
+	mpd_command_list_end(mpd->conn);
+	mpd->status = mpd_recv_status(mpd->conn);
 
-	if(status == NULL) {
+	if(mpd->status == NULL) {
 		fprintf(stderr, "null mpd status\n");
-		mpd_response_finish(conn);
+		mpd_response_finish(mpd->conn);
 		return smprintf(MPD_NONE_STR);
 	}
-	char *mpdstr = NULL;
-	switch(mpd_status_get_state(status)) {
+	char *ret = NULL;
+	switch(mpd_status_get_state(mpd->status)) {
 		case MPD_STATE_PLAY:
-			mpd_response_next(conn);
-			struct mpd_song *song = mpd_recv_song(conn);
+			mpd_response_next(mpd->conn);
+			struct mpd_song *song = mpd_recv_song(mpd->conn);
 			const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
 			if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
-			mpdstr = smprintf(MPD_STR, title);
+			ret = smprintf(MPD_STR, title);
 			mpd_song_free(song);
 			break;
 		case MPD_STATE_PAUSE:
-			mpdstr = smprintf(MPD_P_STR);
+			ret = smprintf(MPD_P_STR);
 			break;
 		case MPD_STATE_STOP:
-			mpdstr = smprintf(MPD_S_STR);
+			ret = smprintf(MPD_S_STR);
 			break;
 		case MPD_STATE_UNKNOWN:
-			mpdstr = smprintf(MPD_NONE_STR);
+			ret = smprintf(MPD_NONE_STR);
 			fprintf(stderr, "mpd state unknown\n");
 	}
-	mpd_status_free(status);
-	mpd_response_finish(conn);
-	return mpdstr;
+	mpd_status_free(mpd->status);
+	mpd_response_finish(mpd->conn);
+	return ret;
 }
 
 char *new_mail(char *dir) {

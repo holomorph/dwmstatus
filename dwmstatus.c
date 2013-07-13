@@ -13,6 +13,11 @@
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 
+typedef struct {
+	struct mpd_connection *conn;
+	struct mpd_status *status;
+} MpdClient;
+
 /* static void cleanup(void); */
 /* static int runevery(time_t *ltime, int sec); */
 /* static void setstatus(char *str); */
@@ -24,10 +29,10 @@ static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
 /* static struct pulseaudio_t pulse; */
-static struct mpd_connection *conn;
+static MpdClient *mpd;
 static char *status;
 static char *mail;
-static char *mpd;
+static char *mpdstr;
 /* static char *vol; */
 static char *avgs;
 static char *core;
@@ -42,7 +47,7 @@ static char *date;
 
 void cleanup(void) {
 	free(mail);
-	free(mpd);
+	free(mpdstr);
 	/* free(vol); */
 	free(avgs);
 	free(core);
@@ -51,7 +56,7 @@ void cleanup(void) {
 	free(batt);
 	free(date);
 	free(status);
-	mpd_connection_free(conn);
+	mpd_deinit();
 	/* pulse_deinit(&pulse); */
 	XCloseDisplay(dpy);
 }
@@ -75,16 +80,9 @@ int main(void) {
 	signal(SIGINT, sighandler);
 
 	network_init();
-
 /* 	pulse_init(&pulse, "lolpulse"); */
 /* 	pulse_connect(&pulse); */
-
-	conn = mpd_connection_new(NULL, 0, 30000);
-	if(mpd_connection_get_error(conn)) {
-		fprintf(stderr, "failed to connect to mpd: %s\n",
-				mpd_connection_get_error_message(conn));
-		return EXIT_FAILURE;
-	}
+	mpd_connect();
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
@@ -111,14 +109,14 @@ int main(void) {
 			}
 		}
 
-		free(mpd);
+		free(mpdstr);
 		/* free(vol); */
 		free(net);
 		free(status);
-		mpd = music(conn);
+		mpdstr = music();
 		/* vol = volume(pulse); */
 		net = network();
-		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpd, avgs, core, mem, net, batt, date);
+		status = smprintf("%s%s%s%s%s%s%s%s", mail, mpdstr, avgs, core, mem, net, batt, date);
 
 		setstatus(status);
 	}
