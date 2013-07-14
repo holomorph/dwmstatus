@@ -1,4 +1,6 @@
-#define BATT_LOW 11 /* Upper threshold for urgent battery percent */
+/* See LICENSE file for copyright and license details. */
+
+#define BATT_LOW 12 /* Upper threshold for urgent battery percent */
 #define LOAD_HI  1  /* Lower threshold for urgent cpu load */
 #define TEMP_HI  75 /* Lower threshold for urgent core temp */
 #define INTERVAL 2  /* Sleeps for INTERVAL seconds each iter */
@@ -21,7 +23,7 @@
 #define MPD_S_STR    "\x04\uE012 Stopped \x09| "
 #define MPD_NONE_STR "\x03\uE012 Failed \x09| "
 
-/* volume via pulseaudio */
+/* volume percent */
 #define VOL_STR      "\x07\uE010 %d%% \x09| "
 #define VOL_MUTE_STR "\x03\uE010 %d%% \x09| "
 

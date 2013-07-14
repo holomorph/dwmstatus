@@ -1,3 +1,4 @@
+/* See LICENSE file for copyright and license details. */
 #define _BSD_SOURCE
 #include <unistd.h>
 #include <stdio.h>
@@ -25,16 +26,13 @@ typedef struct {
 	struct mpd_status *status;
 } MpdClient;
 
-/* static void cleanup(void); */
-/* static int runevery(time_t *ltime, int sec); */
-/* static void setstatus(char *str); */
-/* static void sighandler(int signum); */
-/* static char *smprintf(char *fmt, ...); */
-
 static Display *dpy;
 static long rx_old, rx_new;
 static long tx_old, tx_new;
 static int tmsleep = 0;
+static time_t count10 = 0;
+static time_t count60 = 0;
+static time_t count180 = 0;
 static struct pulseaudio_t pulse;
 static MpdClient *mpd;
 static Interface *iface;
@@ -80,10 +78,6 @@ void sighandler(int signum) {
 }
 
 int main(int argc, char *argv[]) {
-	time_t count10 = 0;
-	time_t count60 = 0;
-	time_t count180 = 0;
-
 	int opt;
 	char *ifname = NULL;
 	char *maildir = NULL;
@@ -100,12 +94,9 @@ int main(int argc, char *argv[]) {
 		}
 
 	network_init(ifname);
-
 	if(pulse_init(&pulse) != 0)
 		return EXIT_FAILURE;
-
 	mpd_init();
-
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
 		return EXIT_FAILURE;

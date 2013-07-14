@@ -1,11 +1,9 @@
-/* xorg */
+/* See LICENSE file for copyright and license details. */
 
 void setstatus(char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
 	XSync(dpy, False);
 }
-
-/* convenience functions */
 
 char *smprintf(char *fmt, ...) {
 	va_list fmtargs;
@@ -37,8 +35,6 @@ int runevery(time_t *ltime, int sec) {
 	else
 		return EXIT_SUCCESS;
 }
-
-/* status line functions */
 
 char *loadavg(void) {
 	double avgs[3];
@@ -221,7 +217,6 @@ void mpd_deinit(void) {
 
 char *music(void) {
 	if(mpd_connection_get_error(mpd->conn)) {
-		fprintf(stderr, "mpd connection interrupted\n");
 		return smprintf(MPD_NONE_STR);
 	}
 

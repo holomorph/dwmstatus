@@ -92,21 +92,6 @@ struct arg_t {
   struct io_t *target;
 };
 
-/* functions */
-/* static void io_list_add(struct io_t **list, struct io_t *node); */
-/* static void populate_levels(struct io_t *node); */
-/* static struct io_t *sink_new(const pa_sink_info *info); */
-/* static void sink_add_cb(pa_context UNUSED *c, const pa_sink_info *i, int eol, void *raw); */
-/* static void server_info_cb(pa_context UNUSED *c, const pa_server_info *i, void *raw); */
-/* static void connect_state_cb(pa_context *cxt, void *raw); */
-/* static void pulse_async_wait(struct pulseaudio_t *pulse, pa_operation *op); */
-/* static int get_default_sink(struct pulseaudio_t *pulse, struct io_t **list); */
-/* static int pulse_init(struct pulseaudio_t *pulse); */
-/* static void pulse_deinit(struct pulseaudio_t *pulse); */
-
-/* variable */
-/* static struct pulseaudio_t pulse; */
-
 void io_list_add(struct io_t **list, struct io_t *node) {
   struct io_t *head = *list;
 
@@ -212,23 +197,11 @@ void pulse_deinit(struct pulseaudio_t *pulse) {
 char *ponyprint(void) {
   struct arg_t arg = { 0, NULL, NULL };
 
-  /* initialize connection */
-  /* if (pulse_init(&pulse) != 0) */
-  /*   return EXIT_FAILURE; */
-
   get_default_sink(&pulse, &arg.devices);
-
   if(arg.devices->mute)
-    /* printf("VOL: %d%% [MM]\n", arg.devices->volume_percent); */
     return smprintf(VOL_MUTE_STR, arg.devices->volume_percent);
   else
-    /* printf("VOL: %d%% [  ]\n", arg.devices->volume_percent); */
     return smprintf(VOL_STR, arg.devices->volume_percent);
-
-  /* shut down */
-  /* pulse_deinit(&pulse); */
-
-  /* return EXIT_SUCCESS; */
 }
 
 /* vim: set ts=2 sw=2 et: */
