@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <dirent.h>
+#include <getopt.h>
 #include <mpd/client.h>
 #include <X11/Xlib.h>
 
@@ -78,15 +79,23 @@ void sighandler(int signum) {
 	}
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	time_t count10 = 0;
 	time_t count60 = 0;
 	time_t count180 = 0;
 
-	signal(SIGTERM, sighandler);
-	signal(SIGINT, sighandler);
+	int opt;
+	char *ifname = NULL;
+	while((opt = getopt(argc, argv, "i:")) != -1)
+		switch(opt) {
+			case 'i':
+				ifname = optarg;
+				break;
+			default:
+				return EXIT_FAILURE;
+		}
 
-	network_init();
+	network_init(ifname);
 
 	if(pulse_init(&pulse) != 0)
 		return EXIT_FAILURE;
@@ -97,6 +106,9 @@ int main(void) {
 		fprintf(stderr, "cannot open display\n");
 		return EXIT_FAILURE;
 	}
+
+	signal(SIGTERM, sighandler);
+	signal(SIGINT, sighandler);
 
 	for(;;sleep(INTERVAL)) {
 		if (runevery(&count10, 10)) {

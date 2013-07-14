@@ -4,7 +4,6 @@
 #define INTERVAL 2  /* Sleeps for INTERVAL seconds each iter */
 
 /* files read for system info */
-#define IFACE     "enp5s0"
 #define MEM_FILE  "/proc/meminfo"
 #define MAIL_DIR  "/home/mvo/.mutt/mail/inbox/new"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"

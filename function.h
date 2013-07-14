@@ -84,14 +84,14 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-int network_init(void) {
+int network_init(char *ifname) {
 	if(!(iface = malloc(sizeof(Interface)))) {
 		fprintf(stderr, "iface malloc failed");
 		return EXIT_FAILURE;
 	}
-	iface->name = IFACE;
-	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", IFACE);
-	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", IFACE);
+	iface->name = ifname;
+	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
+	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
 	FILE *f;
 
 	if(!(f = fopen(iface->rx, "r"))) {
