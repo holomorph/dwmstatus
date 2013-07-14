@@ -4,6 +4,7 @@
 #define INTERVAL 2  /* Sleeps for INTERVAL seconds each iter */
 
 /* files read for system info */
+#define IFACE     "enp5s0"
 #define MEM_FILE  "/proc/meminfo"
 #define MAIL_DIR  "/home/mvo/.mutt/mail/inbox/new"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
@@ -11,8 +12,6 @@
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
 #define BATT_CAP  "/sys/class/power_supply/BAT1/capacity"
-#define WIFI_DN   "/sys/class/net/enp5s0/statistics/rx_bytes"
-#define WIFI_UP   "/sys/class/net/enp5s0/statistics/tx_bytes"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
 
 /* mail */

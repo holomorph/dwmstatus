@@ -84,38 +84,46 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-void network_init(void) {
+int network_init(void) {
+	if(!(iface = malloc(sizeof(Interface)))) {
+		fprintf(stderr, "iface malloc failed");
+		return EXIT_FAILURE;
+	}
+	iface->name = IFACE;
+	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", IFACE);
+	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", IFACE);
 	FILE *f;
 
-	if(!(f = fopen(WIFI_DN, "r"))) {
-		fprintf(stderr, "cannot read %s\n", WIFI_DN);
-		exit(EXIT_FAILURE);
+	if(!(f = fopen(iface->rx, "r"))) {
+		fprintf(stderr, "cannot read %s\n", iface->rx);
+		return EXIT_FAILURE;
 	}
 	else {
 		fscanf(f,"%ld", &rx_old);
 		fclose(f);
 	}
-	if(!(f = fopen(WIFI_UP, "r"))) {
-		fprintf(stderr, "cannot read %s\n", WIFI_UP);
-		exit(EXIT_FAILURE);
+	if(!(f = fopen(iface->tx, "r"))) {
+		fprintf(stderr, "cannot read %s\n", iface->tx);
+		return EXIT_FAILURE;
 	}
 	else {
 		fscanf(f,"%ld", &tx_old);
 		fclose(f);
 	}
+	return EXIT_SUCCESS;
 }
 
 char *network(void) {
 	FILE *f;
 	char rxk[7], txk[7];
 
-	if(!(f = fopen(WIFI_DN, "r")))
+	if(!(f = fopen(iface->rx, "r")))
 		return smprintf("");
 	else {
 		fscanf(f, "%ld", &rx_new);
 		fclose(f);
 	}
-	if(!(f = fopen(WIFI_UP, "r")))
+	if(!(f = fopen(iface->tx, "r")))
 		return smprintf("");
 	else {
 		fscanf(f, "%ld", &tx_new);

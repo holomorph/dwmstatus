@@ -6,12 +6,18 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/time.h>
-#include <time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <time.h>
 #include <dirent.h>
 #include <mpd/client.h>
 #include <X11/Xlib.h>
+
+typedef struct {
+	char *name;
+	char *rx;
+	char *tx;
+} Interface;
 
 typedef struct {
 	struct mpd_connection *conn;
@@ -30,6 +36,7 @@ static long tx_old, tx_new;
 static int tmsleep = 0;
 static struct pulseaudio_t pulse;
 static MpdClient *mpd;
+static Interface *iface;
 static char *status;
 static char *mail;
 static char *mpdstr;
@@ -56,6 +63,7 @@ void cleanup(void) {
 	free(batt);
 	free(date);
 	free(status);
+	free(iface);
 	mpd_deinit();
 	pulse_deinit(&pulse);
 	XCloseDisplay(dpy);
