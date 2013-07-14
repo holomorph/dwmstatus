@@ -86,10 +86,14 @@ int main(int argc, char *argv[]) {
 
 	int opt;
 	char *ifname = NULL;
-	while((opt = getopt(argc, argv, "i:")) != -1)
+	char *maildir = NULL;
+	while((opt = getopt(argc, argv, "i:m:")) != -1)
 		switch(opt) {
 			case 'i':
 				ifname = optarg;
+				break;
+			case 'm':
+				maildir = optarg;
 				break;
 			default:
 				return EXIT_FAILURE;
@@ -126,7 +130,7 @@ int main(int argc, char *argv[]) {
 			date = mktimes();
 			if(runevery(&count180, 180)) {
 				free(mail);
-				mail = new_mail();
+				mail = new_mail(maildir);
 			}
 		}
 

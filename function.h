@@ -261,13 +261,15 @@ char *music(void) {
 	return ret;
 }
 
-char *new_mail(void) {
+char *new_mail(char *maildir) {
+	if(maildir == NULL)
+		return smprintf("");
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
 
-	if(!(d = opendir(MAIL_DIR))) {
-		fprintf(stderr, "cannot read directory %s\n", MAIL_DIR);
+	if(!(d = opendir(maildir))) {
+		fprintf(stderr, "cannot read directory %s\n", maildir);
 		exit(EXIT_FAILURE);
 	}
 	while ((rf = readdir(d)) != NULL) {

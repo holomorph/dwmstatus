@@ -5,7 +5,6 @@
 
 /* files read for system info */
 #define MEM_FILE  "/proc/meminfo"
-#define MAIL_DIR  "/home/mvo/.mutt/mail/inbox/new"
 #define BATT_POW  "/sys/class/power_supply/BAT1/power_now"
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
