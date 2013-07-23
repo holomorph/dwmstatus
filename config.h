@@ -12,7 +12,7 @@
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full"
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
 #define BATT_CAP  "/sys/class/power_supply/BAT1/capacity"
-#define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp1_input"
+#define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
 /* mail */
 #define MAIL_STR     "\x0A\uE013 %d \x09| "
