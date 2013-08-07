@@ -32,10 +32,10 @@
 #define CPU_HI_STR   "\x03\uE006 %02.f %02.f %02.f  "
 #define TEMP_STR     "\x01\uE007 %dC  "
 #define TEMP_HI_STR  "\x03\uE007 %dC  "
-#define MEM_STR      "\x01\uE008 %dM \x09|\x01 "
+#define MEM_STR      "\x01\uE008 %dM \x09| "
 
 /* network rates */
-#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09|\x01 "
+#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09| "
 
 /* battery status, level, & time remaining */
 #define BAT_STR      "\x0A\uE00D %d%% (%02.2f) "
