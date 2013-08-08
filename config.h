@@ -15,7 +15,7 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
 /* mail */
-#define MAIL_STR     "\x0A\uE013 %d \x09| "
+#define MAIL_STR     "\x01\uE013 %d \x09| "
 
 /* mpd */
 #define MPD_STR      "\x04\uE012 %.50s \x09| "
