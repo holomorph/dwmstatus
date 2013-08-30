@@ -1,6 +1,17 @@
 /* See LICENSE file for copyright and license details. */
+#define _BSD_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <dirent.h>
+#include <mpd/client.h>
+#include <X11/Xlib.h>
 
-void setstatus(char *str) {
+#include "config.h"
+#include "functions.h"
+
+void setstatus(Display *dpy, char *str) {
 	XStoreName(dpy, DefaultRootWindow(dpy), str);
 	XSync(dpy, False);
 }
@@ -80,11 +91,7 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-int network_init(char *ifname) {
-	if(!(iface = malloc(sizeof(Interface)))) {
-		fprintf(stderr, "iface malloc failed");
-		return EXIT_FAILURE;
-	}
+int network_init(Interface *iface, char *ifname) {
 	iface->name = ifname;
 	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
 	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
@@ -95,7 +102,7 @@ int network_init(char *ifname) {
 		return EXIT_FAILURE;
 	}
 	else {
-		fscanf(f,"%ld", &rx_old);
+		fscanf(f,"%ld", &iface->rx_bytes);
 		fclose(f);
 	}
 	if(!(f = fopen(iface->tx, "r"))) {
@@ -103,33 +110,37 @@ int network_init(char *ifname) {
 		return EXIT_FAILURE;
 	}
 	else {
-		fscanf(f,"%ld", &tx_old);
+		fscanf(f,"%ld", &iface->tx_bytes);
 		fclose(f);
 	}
 	return EXIT_SUCCESS;
 }
 
-char *network(void) {
+void network_deinit(Interface *iface) {
+	free(iface->rx);
+	free(iface->tx);
+	free(iface);
+}
+
+char *network(Interface *iface, long rx_old, long tx_old) {
 	FILE *f;
 	char rxk[7], txk[7];
 
 	if(!(f = fopen(iface->rx, "r")))
 		return smprintf("");
 	else {
-		fscanf(f, "%ld", &rx_new);
+		fscanf(f, "%ld", &iface->rx_bytes);
 		fclose(f);
 	}
 	if(!(f = fopen(iface->tx, "r")))
 		return smprintf("");
 	else {
-		fscanf(f, "%ld", &tx_new);
+		fscanf(f, "%ld", &iface->tx_bytes);
 		fclose(f);
 	}
 
-	sprintf(rxk, "%dK", (int)(rx_new-rx_old)/1024/INTERVAL);
-	sprintf(txk, "%dK", (int)(tx_new-tx_old)/1024/INTERVAL);
-	rx_old = rx_new;
-	tx_old = tx_new;
+	sprintf(rxk, "%dK", (int)(iface->rx_bytes-rx_old)/1024/INTERVAL);
+	sprintf(txk, "%dK", (int)(iface->tx_bytes-tx_old)/1024/INTERVAL);
 	return smprintf(WIFI_STR, rxk, txk);
 }
 
@@ -174,7 +185,7 @@ char *battery(void) {
 	}
 }
 
-char *mktimes(void) {
+char *mktimes(int tmsleep) {
 	char buf[129];
 	time_t tim;
 	struct tm *timtm;
@@ -196,11 +207,7 @@ char *mktimes(void) {
 	return smprintf("%s", buf);
 }
 
-int mpd_init(void) {
-	if(!(mpd = malloc(sizeof(MpdClient)))) {
-		fprintf(stderr, "mpd malloc failed");
-		return EXIT_FAILURE;
-	}
+int mpd_init(MpdClient *mpd) {
 	mpd->conn = mpd_connection_new(NULL, 0, 30000);
 	if(mpd_connection_get_error(mpd->conn)) {
 		fprintf(stderr, "failed to connect to mpd: %s\n",
@@ -210,12 +217,12 @@ int mpd_init(void) {
 	return EXIT_SUCCESS;
 }
 
-void mpd_deinit(void) {
+void mpd_deinit(MpdClient *mpd) {
 	mpd_connection_free(mpd->conn);
 	free(mpd);
 }
 
-char *music(void) {
+char *music(MpdClient *mpd) {
 	if(mpd_connection_get_error(mpd->conn)) {
 		return smprintf(MPD_NONE_STR);
 	}

@@ -1,34 +1,22 @@
 /* See LICENSE file for copyright and license details. */
-#define _BSD_SOURCE
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <strings.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
-#include <dirent.h>
 #include <getopt.h>
-#include <mpd/client.h>
 #include <X11/Xlib.h>
 
-typedef struct {
-	char *name;
-	char *rx;
-	char *tx;
-} Interface;
-
-typedef struct {
-	struct mpd_connection *conn;
-	struct mpd_status *status;
-} MpdClient;
+#include "config.h"
+#include "functions.h"
+#include "pulse.h"
 
 static Display *dpy;
-static long rx_old, rx_new;
-static long tx_old, tx_new;
+static long rx_old, tx_old;
 static int tmsleep = 0;
 static time_t count10 = 0;
 static time_t count60 = 0;
@@ -47,10 +35,6 @@ static char *net;
 static char *batt;
 static char *date;
 
-#include "config.h"
-#include "function.h"
-#include "pulse.h"
-
 void cleanup(void) {
 	free(mail);
 	free(mpdstr);
@@ -62,8 +46,8 @@ void cleanup(void) {
 	free(batt);
 	free(date);
 	free(status);
-	free(iface);
-	mpd_deinit();
+	network_deinit(iface);
+	mpd_deinit(mpd);
 	pulse_deinit(&pulse);
 	XCloseDisplay(dpy);
 }
@@ -93,10 +77,20 @@ int main(int argc, char *argv[]) {
 				return EXIT_FAILURE;
 		}
 
-	network_init(ifname);
+	if(!(iface = malloc(sizeof(Interface)))) {
+		fprintf(stderr, "iface malloc failed");
+		return EXIT_FAILURE;
+	}
+	network_init(iface, ifname);
+	rx_old = iface->rx_bytes;
+	tx_old = iface->tx_bytes;
 	if(pulse_init(&pulse) != 0)
 		return EXIT_FAILURE;
-	mpd_init();
+	if(!(mpd = malloc(sizeof(MpdClient)))) {
+		fprintf(stderr, "mpd malloc failed");
+		return EXIT_FAILURE;
+	}
+	mpd_init(mpd);
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
 		return EXIT_FAILURE;
@@ -118,7 +112,7 @@ int main(int argc, char *argv[]) {
 		}
 		if(runevery(&count60, tmsleep)) {
 			free(date);
-			date = mktimes();
+			date = mktimes(tmsleep);
 			if(runevery(&count180, 180)) {
 				free(mail);
 				mail = new_mail(maildir);
@@ -129,12 +123,14 @@ int main(int argc, char *argv[]) {
 		free(vol);
 		free(net);
 		free(status);
-		mpdstr = music();
-		vol = ponyprint();
-		net = network();
+		mpdstr = music(mpd);
+		vol = ponyprint(pulse);
+		net = network(iface, rx_old, tx_old);
+		rx_old = iface->rx_bytes;
+		tx_old = iface->tx_bytes;
 		status = smprintf("%s%s%s%s%s%s%s%s%s", mail, mpdstr, vol, avgs, core, mem, net, batt, date);
 
-		setstatus(status);
+		setstatus(dpy, status);
 	}
 
 	cleanup();

@@ -2,7 +2,7 @@
 
 include config.mk
 
-SRC = ${NAME}.c
+SRC = ${NAME}.c functions.c pulse.c
 OBJ = ${SRC:.c=.o}
 
 all: options ${NAME}
@@ -17,7 +17,7 @@ options:
 	@echo CC $<
 	@${CC} -c ${CFLAGS} $<
 
-${OBJ}: config.mk config.h function.h pulse.h
+${OBJ}: config.mk config.h
 
 ${NAME}: ${OBJ}
 	@echo CC -o $@
