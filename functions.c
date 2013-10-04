@@ -1,11 +1,12 @@
 /* See LICENSE file for copyright and license details. */
+#define _GNU_SOURCE
 #define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include <time.h>
 #include <dirent.h>
-#include <mpd/client.h>
 #include <X11/Xlib.h>
 
 #include "config.h"
@@ -16,24 +17,18 @@ void setstatus(Display *dpy, char *str) {
 	XSync(dpy, False);
 }
 
-char *smprintf(char *fmt, ...) {
-	va_list fmtargs;
-	char *ret;
-	int len;
+char *smprintf(const char *fmt, ...) {
+  char *buf;
+  va_list ap;
+  int ret;
 
-	va_start(fmtargs, fmt);
-	len = vsnprintf(NULL, 0, fmt, fmtargs);
-	va_end(fmtargs);
-	ret = malloc(++len);
-	if (ret == NULL) {
-		perror("malloc");
-		exit(EXIT_FAILURE);
-	}
+  va_start(ap, fmt);
+  ret = vasprintf(&buf, fmt, ap);
+  va_end(ap);
 
-	va_start(fmtargs, fmt);
-	vsnprintf(ret, len, fmt, fmtargs);
-	va_end(fmtargs);
-	return ret;
+  if(ret < 0)
+    return NULL;
+  return buf;
 }
 
 int runevery(time_t *ltime, int sec) {
@@ -54,7 +49,7 @@ char *loadavg(void) {
 		perror("getloadavg");
 		exit(EXIT_FAILURE);
 	}
-	return smprintf(CPU_STR, 100*avgs[0], 100*avgs[1], 100*avgs[2]);
+	return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
 }
 
 char *coretemp(void) {
@@ -62,7 +57,7 @@ char *coretemp(void) {
 	int temp;
 
 	if(!(f = fopen(CPU_TEMP0, "r")))
-		return smprintf("");
+		return '\0';
 	fscanf(f, "%d", &temp);
 	fclose(f);
 
@@ -127,13 +122,13 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 	char rxk[7], txk[7];
 
 	if(!(f = fopen(iface->rx, "r")))
-		return smprintf("");
+		return '\0';
 	else {
 		fscanf(f, "%ld", &iface->rx_bytes);
 		fclose(f);
 	}
 	if(!(f = fopen(iface->tx, "r")))
-		return smprintf("");
+		return '\0';
 	else {
 		fscanf(f, "%ld", &iface->tx_bytes);
 		fclose(f);
@@ -152,19 +147,19 @@ char *battery(void) {
 	int capacity;
 
 	if(!(f = fopen(BATT_NOW, "r")))
-		return smprintf("");
+		return '\0';
 	fscanf(f, "%ld", &now);
 	fclose(f);
 	if(!(f = fopen(BATT_FULL, "r")))
-		return smprintf("");
+		return '\0';
 	fscanf(f, "%ld", &full);
 	fclose(f);
 	if(!(f = fopen(BATT_STAT, "r")))
-		return smprintf("");
+		return '\0';
 	fscanf(f, "%s", status);
 	fclose(f);
 	if(!(f = fopen(BATT_CAP, "r")))
-		return smprintf("");
+		return '\0';
 	fscanf(f, "%d", &capacity);
 	fclose(f);
 
@@ -174,14 +169,14 @@ char *battery(void) {
 		return smprintf(BAT_FULL_STR, capacity);
 	else {
 		if (!(f = fopen(BATT_POW,"r")))
-			return smprintf("");
+			return '\0';
 		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
 		if (capacity < BATT_LOW)
-			return smprintf(BAT_LOW_STR, capacity, timeleft);
+			return smprintf(BAT_LOW_STR, capacity, timeleft, (float)1.0e-6*power);
 		else
-			return smprintf(BAT_STR, capacity, timeleft);
+			return smprintf(BAT_STR, capacity, timeleft, (float)1.0e-6*power);
 	}
 }
 
@@ -207,65 +202,9 @@ char *mktimes(int tmsleep) {
 	return smprintf("%s", buf);
 }
 
-int mpd_init(MpdClient *mpd) {
-	mpd->conn = mpd_connection_new(NULL, 0, 30000);
-	if(mpd_connection_get_error(mpd->conn)) {
-		fprintf(stderr, "failed to connect to mpd: %s\n",
-				mpd_connection_get_error_message(mpd->conn));
-		return EXIT_FAILURE;
-	}
-	return EXIT_SUCCESS;
-}
-
-void mpd_deinit(MpdClient *mpd) {
-	mpd_connection_free(mpd->conn);
-	free(mpd);
-}
-
-char *music(MpdClient *mpd) {
-	if(mpd_connection_get_error(mpd->conn)) {
-		return smprintf(MPD_NONE_STR);
-	}
-
-	mpd_command_list_begin(mpd->conn, true);
-	mpd_send_status(mpd->conn);
-	mpd_send_current_song(mpd->conn);
-	mpd_command_list_end(mpd->conn);
-	mpd->status = mpd_recv_status(mpd->conn);
-
-	if(mpd->status == NULL) {
-		fprintf(stderr, "null mpd status\n");
-		mpd_response_finish(mpd->conn);
-		return smprintf(MPD_NONE_STR);
-	}
-	char *ret = NULL;
-	switch(mpd_status_get_state(mpd->status)) {
-		case MPD_STATE_PLAY:
-			mpd_response_next(mpd->conn);
-			struct mpd_song *song = mpd_recv_song(mpd->conn);
-			const char *title = mpd_song_get_tag(song, MPD_TAG_TITLE, 0);
-			if (!title) title = mpd_song_get_tag(song, MPD_TAG_NAME, 0);
-			ret = smprintf(MPD_STR, title);
-			mpd_song_free(song);
-			break;
-		case MPD_STATE_PAUSE:
-			ret = smprintf(MPD_P_STR);
-			break;
-		case MPD_STATE_STOP:
-			ret = smprintf(MPD_S_STR);
-			break;
-		case MPD_STATE_UNKNOWN:
-			ret = smprintf(MPD_NONE_STR);
-			fprintf(stderr, "mpd state unknown\n");
-	}
-	mpd_status_free(mpd->status);
-	mpd_response_finish(mpd->conn);
-	return ret;
-}
-
 char *new_mail(char *maildir) {
 	if(maildir == NULL)
-		return smprintf("");
+		return '\0';
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
@@ -280,7 +219,7 @@ char *new_mail(char *maildir) {
 	}
 	closedir(d);
 	if (n == 0)
-		return smprintf("");
+		return '\0';
 	else
 		return smprintf(MAIL_STR, n);
 }

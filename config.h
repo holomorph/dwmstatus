@@ -15,33 +15,30 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
 /* mail */
-#define MAIL_STR     "\x01\uE013 %d \x09| "
-
-/* mpd */
-#define MPD_STR      "\x04\uE012 %.50s \x09| "
-#define MPD_P_STR    "\x04\uE012 Paused \x09| "
-#define MPD_S_STR    "\x04\uE012 Stopped \x09| "
-#define MPD_NONE_STR "\x03\uE012 Failed \x09| "
+#define MAIL_STR     "\x01\uE013 %d"
 
 /* volume percent */
-#define VOL_STR      "\x07\uE010 %d%% \x09| "
-#define VOL_MUTE_STR "\x03\uE010 %d%% \x09| "
+#define VOL_STR      "\x07\uE010 %d%%"
+#define VOL_MUTE_STR "\x03\uE010 %d%%"
 
 /* load avgs, core temperature, & memory usage */
-#define CPU_STR      "\x01\uE006 %02.f %02.f %02.f  "
-#define CPU_HI_STR   "\x03\uE006 %02.f %02.f %02.f  "
-#define TEMP_STR     "\x01\uE007 %dC  "
-#define TEMP_HI_STR  "\x03\uE007 %dC  "
-#define MEM_STR      "\x01\uE008 %dM \x09| "
+#define CPU_STR      "\x01\uE006 %.2f %.2f %.2f"
+#define CPU_HI_STR   "\x03\uE006 %.2f %.2f %.2f"
+#define TEMP_STR     "\x01\uE007 %dC"
+#define TEMP_HI_STR  "\x03\uE007 %dC"
+#define MEM_STR      "\x01\uE008 %dM"
 
 /* network rates */
-#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s \x09| "
+#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s"
 
 /* battery status, level, & time remaining */
-#define BAT_STR      "\x0A\uE00D %d%% (%02.2f) "
-#define BAT_LOW_STR  "\x03\uE00B %d%% (%02.2f) "
-#define BAT_CHRG_STR "\x0A\uE00E %d%% "
-#define BAT_FULL_STR "\x0A\uE00F %d%% "
+#define BAT_STR      "\x0A\uE00D %d%% (%02.2f) %2.2fW"
+#define BAT_LOW_STR  "\x03\uE00B %d%% (%02.2f) %2.2fW"
+#define BAT_CHRG_STR "\x0A\uE00E %d%%"
+#define BAT_FULL_STR "\x0A\uE00F %d%%"
 
 /* date */
-#define DATE_TIME_STR "\x05 \uE011 %a %d %b %H:%M"
+#define DATE_TIME_STR "\x05\uE011 %a %d %b %H:%M"
+
+/* status */
+#define STATUS "%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s"
