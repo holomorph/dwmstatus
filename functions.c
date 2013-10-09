@@ -219,7 +219,7 @@ char *new_mail(char *maildir) {
 	}
 	closedir(d);
 	if (n == 0)
-		return '\0';
+		return smprintf("%s", "");
 	else
 		return smprintf(MAIL_STR, n);
 }

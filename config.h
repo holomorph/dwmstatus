@@ -15,7 +15,7 @@
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
 /* mail */
-#define MAIL_STR     "\x01\uE013 %d"
+#define MAIL_STR     "\x01\uE013 %d \x09| "
 
 /* volume percent */
 #define VOL_STR      "\x07\uE010 %d%%"
@@ -41,4 +41,4 @@
 #define DATE_TIME_STR "\x05\uE011 %a %d %b %H:%M"
 
 /* status */
-#define STATUS "%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s"
+#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s"
