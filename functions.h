@@ -22,6 +22,7 @@ char *loadavg(void);
 char *coretemp(void);
 char *memory(void);
 char *network(Interface *iface, long rx_old, long tx_old);
+char *ipaddr(char *ifname);
 char *battery(void);
 char *mktimes(int tmsleep);
 char *new_mail(char *maildir);

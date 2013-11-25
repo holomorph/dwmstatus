@@ -30,6 +30,7 @@ static char *avgs;
 static char *core;
 static char *mem;
 static char *net;
+static char *addr;
 static char *batt;
 static char *date;
 
@@ -40,6 +41,7 @@ void cleanup(void) {
 	free(core);
 	free(mem);
 	free(net);
+	free(addr);
 	free(batt);
 	free(date);
 	free(status);
@@ -99,6 +101,7 @@ int main(int argc, char *argv[]) {
 			batt = battery();
 		}
 		if(runevery(&count60, tmsleep)) {
+			addr = ipaddr(ifname);
 			date = mktimes(tmsleep);
 			if(runevery(&count180, 180)) {
 				mail = new_mail(maildir);
@@ -108,7 +111,7 @@ int main(int argc, char *argv[]) {
 		net = network(iface, rx_old, tx_old);
 		rx_old = iface->rx_bytes;
 		tx_old = iface->tx_bytes;
-		status = smprintf(STATUS, mail, vol, avgs, core, mem, net, batt, date);
+		status = smprintf(STATUS, mail, vol, avgs, core, mem, net, addr, batt, date);
 
 		setstatus(dpy, status);
 	}

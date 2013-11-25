@@ -31,6 +31,9 @@
 /* network rates */
 #define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s"
 
+/* ip address */
+#define IP_ADDR      "\x04\uE015 \x09| "
+
 /* battery status, level, & time remaining */
 #define BAT_STR      "\x0A\uE00D %d%% (%02.2f) %2.2fW"
 #define BAT_LOW_STR  "\x03\uE00B %d%% (%02.2f) %2.2fW"
@@ -41,4 +44,4 @@
 #define DATE_TIME_STR "\x05\uE011 %a %d %b %H:%M"
 
 /* status */
-#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s"
+#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s%s \x09| %s"

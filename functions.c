@@ -1,12 +1,15 @@
 /* See LICENSE file for copyright and license details. */
 #define _GNU_SOURCE
-#define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/types.h>
 #include <X11/Xlib.h>
 
 #include "config.h"
@@ -137,6 +140,25 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 	sprintf(rxk, "%dK", (int)(iface->rx_bytes-rx_old)/1024/INTERVAL);
 	sprintf(txk, "%dK", (int)(iface->tx_bytes-tx_old)/1024/INTERVAL);
 	return smprintf(WIFI_STR, rxk, txk);
+}
+
+char *ipaddr(char *ifname) {
+	struct ifaddrs *ifaddrs = NULL;
+	struct ifaddrs *ifa = NULL;
+	void *ptr = NULL;
+
+	getifaddrs(&ifaddrs);
+	for(ifa = ifaddrs; ifa != NULL; ifa = ifa->ifa_next) {
+		if(ifa->ifa_addr->sa_family==AF_INET && 0 == strcmp(ifa->ifa_name, ifname)) {
+			ptr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+			char buf[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, ptr, buf, INET_ADDRSTRLEN);
+			if(ifaddrs != NULL) freeifaddrs(ifaddrs);
+			return smprintf(IP_ADDR);
+		}
+	}
+	if(ifaddrs != NULL) freeifaddrs(ifaddrs);
+	return smprintf("%s", "");
 }
 
 char *battery(void) {
