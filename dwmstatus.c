@@ -13,12 +13,13 @@
 
 #include "config.h"
 #include "functions.h"
+#include "alsa.h"
 #include "pulse.h"
 
 static Display *dpy;
 static long rx_old, tx_old;
 static int tmsleep = 0;
-static time_t count10 = 0;
+static int pa = 1;
 static time_t count60 = 0;
 static time_t count180 = 0;
 static struct pulseaudio_t pulse;
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
 	rx_old = iface->rx_bytes;
 	tx_old = iface->tx_bytes;
 	if(pulse_init(&pulse) != 0)
-		return EXIT_FAILURE;
+		pa = 0;
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
 		return EXIT_FAILURE;
@@ -93,13 +94,15 @@ int main(int argc, char *argv[]) {
 	signal(SIGINT, sighandler);
 
 	for(;;sleep(INTERVAL)) {
-		if (runevery(&count10, 10)) {
+		if(pa)
 			vol = ponyprint(pulse);
-			avgs = loadavg();
-			core = coretemp();
-			mem = memory();
-			batt = battery();
-		}
+		else
+			vol = alsaprint();
+		avgs = loadavg();
+		core = coretemp();
+		mem = memory();
+		batt = battery();
+
 		if(runevery(&count60, tmsleep)) {
 			addr = ipaddr(ifname);
 			date = mktimes(tmsleep);

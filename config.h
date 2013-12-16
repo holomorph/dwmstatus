@@ -3,7 +3,7 @@
 #define BATT_LOW 12 /* Upper threshold for urgent battery percent */
 #define LOAD_HI  1  /* Lower threshold for urgent cpu load */
 #define TEMP_HI  75 /* Lower threshold for urgent core temp */
-#define INTERVAL 2  /* Sleeps for INTERVAL seconds each iter */
+#define INTERVAL 10 /* Sleeps for INTERVAL seconds each iteration */
 
 /* files read for system info */
 #define MEM_FILE  "/proc/meminfo"
@@ -18,8 +18,8 @@
 #define MAIL_STR     "\x01\uE013 %d \x09| "
 
 /* volume percent */
-#define VOL_STR      "\x07\uE010 %d%%"
-#define VOL_MUTE_STR "\x03\uE010 %d%%"
+#define VOL_STR      "\x07\uE010 %d%s"
+#define VOL_MUTE_STR "\x03\uE010 %d%s"
 
 /* load avgs, core temperature, & memory usage */
 #define CPU_STR      "\x01\uE006 %.2f %.2f %.2f"

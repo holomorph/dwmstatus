@@ -7,7 +7,7 @@ MANPREFIX = ${PREFIX}/share/man
 
 # includes and libs
 INCS = -I. -I/usr/include
-LIBS = -L/usr/lib -lc -lX11 -lpulse
+LIBS = -L/usr/lib -lc -lX11 -lasound -lpulse
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\"

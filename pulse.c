@@ -142,9 +142,9 @@ char *ponyprint(struct pulseaudio_t pulse) {
 
   get_default_sink(&pulse, &arg.devices);
   if(arg.devices->mute)
-    return smprintf(VOL_MUTE_STR, arg.devices->volume_percent);
+    return smprintf(VOL_MUTE_STR, arg.devices->volume_percent, "%");
   else
-    return smprintf(VOL_STR, arg.devices->volume_percent);
+    return smprintf(VOL_STR, arg.devices->volume_percent, "%");
 }
 
 /* vim: set ts=2 sw=2 et: */
