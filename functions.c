@@ -9,16 +9,9 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/types.h>
-#include <X11/Xlib.h>
 
 #include "config.h"
 #include "functions.h"
-
-void setstatus(Display *dpy, char *str) {
-	XStoreName(dpy, DefaultRootWindow(dpy), str);
-	XSync(dpy, False);
-}
 
 char *smprintf(const char *fmt, ...) {
   char *buf;
@@ -52,7 +45,10 @@ char *loadavg(void) {
 		perror("getloadavg");
 		exit(EXIT_FAILURE);
 	}
-	return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
+	if(avgs[0] > LOAD_HI)
+		return smprintf(CPU_HI_STR, avgs[0], avgs[1], avgs[2]);
+	else
+		return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
 }
 
 char *coretemp(void) {
@@ -89,7 +85,7 @@ char *memory(void) {
 	return smprintf(MEM_STR, used);
 }
 
-int network_init(Interface *iface, char *ifname) {
+int network_init(Interface *iface, const char *ifname) {
 	iface->name = ifname;
 	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
 	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
@@ -142,7 +138,7 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 	return smprintf(WIFI_STR, rxk, txk);
 }
 
-char *ipaddr(char *ifname) {
+char *ipaddr(const char *ifname) {
 	struct ifaddrs *ifaddrs = NULL;
 	struct ifaddrs *ifa = NULL;
 	void *ptr = NULL;
@@ -224,7 +220,7 @@ char *mktimes(int tmsleep) {
 	return smprintf("%s", buf);
 }
 
-char *new_mail(char *maildir) {
+char *new_mail(const char *maildir) {
 	if(maildir == NULL)
 		return '\0';
 	int n = 0;

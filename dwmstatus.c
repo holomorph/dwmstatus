@@ -3,15 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <time.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
 
 #include "config.h"
+
 #include "functions.h"
 #include "alsa.h"
 #include "pulse.h"
@@ -35,7 +32,17 @@ static char *addr;
 static char *batt;
 static char *date;
 
-void cleanup(void) {
+static struct {
+	const char *iface;
+	const char *maildir;
+} cfg;
+
+static void setstatus(char *str) {
+	XStoreName(dpy, DefaultRootWindow(dpy), str);
+	XSync(dpy, False);
+}
+
+static void cleanup(void) {
 	free(mail);
 	free(vol);
 	free(avgs);
@@ -51,47 +58,60 @@ void cleanup(void) {
 	XCloseDisplay(dpy);
 }
 
-void sighandler(int signum) {
-	switch(signum) {
-		case SIGINT:
-		case SIGTERM:
-			cleanup();
-			exit(EXIT_SUCCESS);
+static void parse_args(int *argc, char **argv[]) {
+	while (1) {
+		int opt = getopt(*argc, *argv, "i:m:");
+		if (opt == -1)
+			break;
+
+		switch(opt) {
+			case 'i':
+				cfg.iface = optarg;
+				break;
+			case 'm':
+				cfg.maildir = optarg;
+				break;
+		}
 	}
 }
 
-int main(int argc, char *argv[]) {
-	int opt;
-	char *ifname = NULL;
-	char *maildir = NULL;
-	while((opt = getopt(argc, argv, "i:m:")) != -1)
-		switch(opt) {
-			case 'i':
-				ifname = optarg;
-				break;
-			case 'm':
-				maildir = optarg;
-				break;
-			default:
-				return EXIT_FAILURE;
-		}
-
-	if(!(iface = malloc(sizeof(Interface)))) {
-		fprintf(stderr, "iface malloc failed");
-		return EXIT_FAILURE;
-	}
-	network_init(iface, ifname);
-	rx_old = iface->rx_bytes;
-	tx_old = iface->tx_bytes;
-	if(pulse_init(&pulse) != 0)
-		pa = 0;
+static int dwmstatus_init(void) {
+	/* initialize a bunch of things:
+	 *
+	 * - x display connection
+	 * - network info struct
+	 * - read initial rx/tx values
+	 * - connection to the pulse server
+	 */
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
 		return EXIT_FAILURE;
 	}
 
-	signal(SIGTERM, sighandler);
-	signal(SIGINT, sighandler);
+	if(!(iface = malloc(sizeof(Interface)))) {
+		fprintf(stderr, "iface malloc failed");
+		return EXIT_FAILURE;
+	}
+	if(network_init(iface, cfg.iface)) {
+		network_deinit(iface);
+		return EXIT_FAILURE;
+	}
+	rx_old = iface->rx_bytes;
+	tx_old = iface->tx_bytes;
+
+	if(pulse_init(&pulse) != 0)
+		pa = 0;
+
+	return EXIT_SUCCESS;
+}
+
+int main(int argc, char *argv[]) {
+	parse_args(&argc, &argv);
+
+	if (dwmstatus_init()) {
+		fprintf(stderr, "failed to initialize\n");
+		return EXIT_FAILURE;
+	}
 
 	for(;;sleep(INTERVAL)) {
 		if(pa)
@@ -104,10 +124,10 @@ int main(int argc, char *argv[]) {
 		batt = battery();
 
 		if(runevery(&count60, tmsleep)) {
-			addr = ipaddr(ifname);
+			addr = ipaddr(cfg.iface);
 			date = mktimes(tmsleep);
 			if(runevery(&count180, 180)) {
-				mail = new_mail(maildir);
+				mail = new_mail(cfg.maildir);
 			}
 		}
 
@@ -116,7 +136,7 @@ int main(int argc, char *argv[]) {
 		tx_old = iface->tx_bytes;
 		status = smprintf(STATUS, mail, vol, avgs, core, mem, net, addr, batt, date);
 
-		setstatus(dpy, status);
+		setstatus(status);
 	}
 
 	cleanup();

@@ -2,6 +2,7 @@
 #include <alloca.h>
 #include <alsa/asoundlib.h>
 
+#include "alsa.h"
 #include "config.h"
 #include "util.h"
 
