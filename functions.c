@@ -198,7 +198,7 @@ char *battery(void) {
 	}
 }
 
-char *mktimes(int tmsleep) {
+char *mktimes(int *tmsleep) {
 	char buf[129];
 	time_t tim;
 	struct tm *timtm;
@@ -216,7 +216,7 @@ char *mktimes(int tmsleep) {
 		exit(EXIT_FAILURE);
 	}
 
-	tmsleep = 60 - timtm->tm_sec;
+	*tmsleep = 60 - timtm->tm_sec;
 	return smprintf("%s", buf);
 }
 

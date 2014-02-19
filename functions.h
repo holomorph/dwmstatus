@@ -23,5 +23,5 @@ char *memory(void);
 char *network(Interface *iface, long rx_old, long tx_old);
 char *ipaddr(const char *ifname);
 char *battery(void);
-char *mktimes(int tmsleep);
+char *mktimes(int *tmsleep);
 char *new_mail(const char *maildir);

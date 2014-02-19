@@ -14,22 +14,13 @@
 #include "pulse.h"
 
 static Display *dpy;
-static long rx_old, tx_old;
-static int tmsleep = 0;
-static int pa = 1;
-static time_t count60 = 0;
-static time_t count180 = 0;
-static struct pulseaudio_t pulse;
 static Interface *iface;
+static long rx_old, tx_old;
+static int pa = 1;
+static struct pulseaudio_t pulse;
 static char *status;
 static char *mail;
-static char *vol;
-static char *avgs;
-static char *core;
-static char *mem;
-static char *net;
 static char *addr;
-static char *batt;
 static char *date;
 
 static struct {
@@ -44,13 +35,7 @@ static void setstatus(char *str) {
 
 static void cleanup(void) {
 	free(mail);
-	free(vol);
-	free(avgs);
-	free(core);
-	free(mem);
-	free(net);
 	free(addr);
-	free(batt);
 	free(date);
 	free(status);
 	network_deinit(iface);
@@ -59,8 +44,14 @@ static void cleanup(void) {
 }
 
 static void parse_args(int *argc, char **argv[]) {
+	static const struct option opts[] = {
+		{ "interface", required_argument, 0, 'i' },
+		{ "maildir",   required_argument, 0, 'm' },
+		{ 0, 0, 0, 0 }
+	};
+
 	while (1) {
-		int opt = getopt(*argc, *argv, "i:m:");
+		int opt = getopt_long(*argc, *argv, "i:m:", opts, NULL);
 		if (opt == -1)
 			break;
 
@@ -105,7 +96,17 @@ static int dwmstatus_init(void) {
 	return EXIT_SUCCESS;
 }
 
+static char *volume(void) {
+	if(pa)
+		return ponyprint(pulse, &pa);
+	return alsaprint();
+}
+
 int main(int argc, char *argv[]) {
+	time_t count60 = 0;
+	time_t count180 = 0;
+	int tmsleep = 0;
+
 	parse_args(&argc, &argv);
 
 	if (dwmstatus_init()) {
@@ -114,27 +115,18 @@ int main(int argc, char *argv[]) {
 	}
 
 	for(;;sleep(INTERVAL)) {
-		if(pa)
-			vol = ponyprint(pulse);
-		else
-			vol = alsaprint();
-		avgs = loadavg();
-		core = coretemp();
-		mem = memory();
-		batt = battery();
 
 		if(runevery(&count60, tmsleep)) {
 			addr = ipaddr(cfg.iface);
-			date = mktimes(tmsleep);
+			date = mktimes(&tmsleep);
 			if(runevery(&count180, 180)) {
 				mail = new_mail(cfg.maildir);
 			}
 		}
 
-		net = network(iface, rx_old, tx_old);
+		status = smprintf(STATUS, mail, volume(), loadavg(), coretemp(), memory(), network(iface, rx_old, tx_old), addr, battery(), date);
 		rx_old = iface->rx_bytes;
 		tx_old = iface->tx_bytes;
-		status = smprintf(STATUS, mail, vol, avgs, core, mem, net, addr, batt, date);
 
 		setstatus(status);
 	}

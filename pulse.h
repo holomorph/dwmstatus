@@ -35,38 +35,19 @@
 #define UNUSED __attribute__((unused))
 #define IO_NEW(io, info, pp) \
   io = calloc(1, sizeof(struct io_t)); \
-  io->idx = info->index; \
   io->mute = info->mute; \
   io->name = strdup(info->name ? info->name : ""); \
   io->pp_name = pp; \
   memcpy(&io->volume, &info->volume, sizeof(pa_cvolume)); \
-  memcpy(&io->channels, &info->channel_map, sizeof(pa_channel_map)); \
   populate_levels(io);
 
-enum mode {
-  MODE_DEVICE = 1 << 0,
-  MODE_APP    = 1 << 1,
-  MODE_ANY    = (1 << 2) - 1,
-};
-
 struct io_t {
-  uint32_t idx;
   char *name;
   char *desc;
   const char *pp_name;
   pa_cvolume volume;
-  pa_channel_map channels;
   int volume_percent;
-  int balance;
   int mute;
-
-  struct ops_t {
-    pa_operation *(*mute)(pa_context *, uint32_t, int, pa_context_success_cb_t, void *);
-    pa_operation *(*setvol)(pa_context *, uint32_t, const pa_cvolume *, pa_context_success_cb_t, void *);
-    pa_operation *(*setdefault)(pa_context *, const char *, pa_context_success_cb_t, void *);
-    pa_operation *(*move)(pa_context *, uint32_t, uint32_t, pa_context_success_cb_t, void *);
-    pa_operation *(*kill)(pa_context *, uint32_t, pa_context_success_cb_t, void *);
-  } op;
 
   struct io_t *next;
   struct io_t *prev;
@@ -101,6 +82,6 @@ void pulse_async_wait(struct pulseaudio_t *pulse, pa_operation *op);
 int get_default_sink(struct pulseaudio_t *pulse, struct io_t **list);
 int pulse_init(struct pulseaudio_t *pulse);
 void pulse_deinit(struct pulseaudio_t *pulse);
-char *ponyprint(struct pulseaudio_t pulse);
+char *ponyprint(struct pulseaudio_t pulse, int *pa_running);
 
 /* vim: set ts=2 sw=2 et: */

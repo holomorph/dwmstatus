@@ -52,8 +52,6 @@ void io_list_add(struct io_t **list, struct io_t *node) {
 void populate_levels(struct io_t *node) {
   node->volume_percent = (int)(((double)pa_cvolume_avg(&node->volume) * 100)
                                / PA_VOLUME_NORM);
-  node->balance = (int)((double)pa_cvolume_get_balance(&node->volume,
-                                                       &node->channels) * 100);
 }
 
 struct io_t *sink_new(const pa_sink_info *info) {
@@ -61,9 +59,6 @@ struct io_t *sink_new(const pa_sink_info *info) {
 
   IO_NEW(sink, info, "sink");
   sink->desc = strdup(info->description);
-  sink->op.mute = pa_context_set_sink_mute_by_index;
-  sink->op.setvol = pa_context_set_sink_volume_by_index;
-  sink->op.setdefault = pa_context_set_default_sink;
 
   return sink;
 }
@@ -137,10 +132,15 @@ void pulse_deinit(struct pulseaudio_t *pulse) {
   free(pulse->default_source);
 }
 
-char *ponyprint(struct pulseaudio_t pulse) {
+char *ponyprint(struct pulseaudio_t pulse, int *pa_running) {
   struct arg_t arg = { 0, NULL, NULL };
 
   get_default_sink(&pulse, &arg.devices);
+  if(!arg.devices) {
+    fprintf(stderr, "bestpony died\n");
+    *pa_running = 0;
+    return smprintf(VOL_MUTE_STR, 0, "X");
+  }
   if(arg.devices->mute)
     return smprintf(VOL_MUTE_STR, arg.devices->volume_percent, "%");
   else
