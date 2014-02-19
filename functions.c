@@ -6,9 +6,10 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+
 #include <ifaddrs.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#include <netdb.h>
+#include <net/if.h>
 
 #include "config.h"
 #include "functions.h"
@@ -139,22 +140,35 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 }
 
 char *ipaddr(const char *ifname) {
-	struct ifaddrs *ifaddrs = NULL;
-	struct ifaddrs *ifa = NULL;
-	void *ptr = NULL;
+	struct ifaddrs *ifaddr, *ifa;
+	socklen_t len = sizeof(struct sockaddr_in);
+	char host[NI_MAXHOST];
+	int ret;
 
-	getifaddrs(&ifaddrs);
-	for(ifa = ifaddrs; ifa != NULL; ifa = ifa->ifa_next) {
-		if(ifa->ifa_addr->sa_family==AF_INET && 0 == strcmp(ifa->ifa_name, ifname)) {
-			ptr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-			char buf[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, ptr, buf, INET_ADDRSTRLEN);
-			if(ifaddrs != NULL) freeifaddrs(ifaddrs);
-			return smprintf(IP_ADDR);
+	if(getifaddrs(&ifaddr) == -1) {
+		perror("getifaddrs");
+		exit(EXIT_FAILURE);
+	}
+
+	for(ifa = ifaddr;
+		(ifa != NULL && (strcmp(ifa->ifa_name, ifname) != 0 || ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_INET));
+		ifa = ifa->ifa_next) {
+		if (strcmp(ifa->ifa_name, ifname) != 0)
+			continue;
+		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
+			freeifaddrs(ifaddr);
+			return IF_DOWN;
 		}
 	}
-	if(ifaddrs != NULL) freeifaddrs(ifaddrs);
-	return smprintf("%s", "");
+
+	memset(host, 0, sizeof(host));
+	if ((ret = getnameinfo(ifa->ifa_addr, len, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
+		fprintf(stderr, "%s\n", gai_strerror(ret));
+		freeifaddrs(ifaddr);
+		return IP_NONE;
+	}
+	freeifaddrs(ifaddr);
+	return IP_ADDR;
 }
 
 char *battery(void) {
@@ -237,7 +251,7 @@ char *new_mail(const char *maildir) {
 	}
 	closedir(d);
 	if (n == 0)
-		return smprintf("%s", "");
+		return "";
 	else
 		return smprintf(MAIL_STR, n);
 }

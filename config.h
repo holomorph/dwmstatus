@@ -33,6 +33,8 @@
 
 /* ip address */
 #define IP_ADDR      "\x04\uE015 \x09| "
+#define IP_NONE      "\x03\uE015 \x09| "
+#define IF_DOWN      "\x09\uE015 | "
 
 /* battery status, level, & time remaining */
 #define BAT_STR      "\x0A\uE00D %d%% (%02.2f) %2.2fW"
