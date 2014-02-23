@@ -21,6 +21,7 @@ static struct pulseaudio_t pulse;
 static char *status;
 static char *mail;
 static char *addr;
+static char *batt;
 static char *date;
 
 static struct {
@@ -36,6 +37,7 @@ static void setstatus(char *str) {
 static void cleanup(void) {
 	free(mail);
 	free(addr);
+	free(batt);
 	free(date);
 	free(status);
 	network_deinit(iface);
@@ -118,13 +120,14 @@ int main(int argc, char *argv[]) {
 
 		if(runevery(&count60, tmsleep)) {
 			addr = ipaddr(cfg.iface);
+			batt = battery();
 			date = mktimes(&tmsleep);
 			if(runevery(&count180, 180)) {
 				mail = new_mail(cfg.maildir);
 			}
 		}
 
-		status = smprintf(STATUS, mail, volume(), loadavg(), coretemp(), memory(), network(iface, rx_old, tx_old), addr, battery(), date);
+		status = smprintf(STATUS, mail, volume(), loadavg(), coretemp(), memory(), network(iface, rx_old, tx_old), addr, batt, date);
 		rx_old = iface->rx_bytes;
 		tx_old = iface->tx_bytes;
 

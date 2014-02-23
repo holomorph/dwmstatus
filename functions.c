@@ -175,8 +175,7 @@ char *battery(void) {
 	FILE *f = NULL;
 	long now, full, power;
 	char status[11];
-	float timeleft;
-	int capacity;
+	float capacity, timeleft;
 
 	if(!(f = fopen(BATT_NOW, "r")))
 		return '\0';
@@ -190,11 +189,8 @@ char *battery(void) {
 		return '\0';
 	fscanf(f, "%s", status);
 	fclose(f);
-	if(!(f = fopen(BATT_CAP, "r")))
-		return '\0';
-	fscanf(f, "%d", &capacity);
-	fclose(f);
 
+	capacity = (float) 100*now/full;
 	if (strncmp(status, "Charging", 8) == 0)
 		return smprintf(BAT_CHRG_STR, capacity);
 	else if (strncmp(status, "Full", 8) == 0 || strncmp(status, "Unknown", 8) == 0)
