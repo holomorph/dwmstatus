@@ -134,8 +134,8 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 		fclose(f);
 	}
 
-	sprintf(rxk, "%dK", (int)(iface->rx_bytes-rx_old)/1024/INTERVAL);
-	sprintf(txk, "%dK", (int)(iface->tx_bytes-tx_old)/1024/INTERVAL);
+	sprintf(rxk, "%.1f", (float)(iface->rx_bytes-rx_old)/1024/INTERVAL);
+	sprintf(txk, "%.1f", (float)(iface->tx_bytes-tx_old)/1024/INTERVAL);
 	return smprintf(WIFI_STR, rxk, txk);
 }
 
