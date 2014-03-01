@@ -1,6 +1,6 @@
 /* See LICENSE file for copyright and license details. */
 
-#define BATT_LOW 12 /* Upper threshold for urgent battery percent */
+#define BATT_LOW 10 /* Upper threshold for urgent battery percent */
 #define LOAD_HI  1  /* Lower threshold for urgent cpu load */
 #define TEMP_HI  75 /* Lower threshold for urgent core temp */
 #define INTERVAL 10 /* Sleeps for INTERVAL seconds each iteration */
@@ -47,4 +47,4 @@
 #define DATE_TIME_STR "\x05%a %d %b %H:%M"
 
 /* status */
-#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s%s \x09| %s"
+#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s%s%s"

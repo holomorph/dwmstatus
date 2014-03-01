@@ -182,33 +182,33 @@ char *battery(void) {
 	float capacity, timeleft;
 
 	if(!(f = fopen(BATT_NOW, "r")))
-		return '\0';
+		return "";
 	fscanf(f, "%ld", &now);
 	fclose(f);
 	if(!(f = fopen(BATT_FULL, "r")))
-		return '\0';
+		return "";
 	fscanf(f, "%ld", &full);
 	fclose(f);
 	if(!(f = fopen(BATT_STAT, "r")))
-		return '\0';
+		return "";
 	fscanf(f, "%s", status);
 	fclose(f);
 
 	capacity = (float) 100*now/full;
 	if (strncmp(status, "Charging", 8) == 0)
-		return smprintf(BAT_CHRG_STR, capacity);
+		return smprintf(BAT_CHRG_STR BAR, capacity);
 	else if (strncmp(status, "Full", 8) == 0 || strncmp(status, "Unknown", 8) == 0)
-		return smprintf(BAT_FULL_STR, capacity);
+		return smprintf(BAT_FULL_STR BAR, capacity);
 	else {
 		if (!(f = fopen(BATT_POW,"r")))
-			return '\0';
+			return "";
 		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
 		if (capacity < BATT_LOW)
-			return smprintf(BAT_LOW_STR, capacity, timeleft, (float)1.0e-6*power);
+			return smprintf(BAT_LOW_STR BAR, capacity, timeleft, (float)1.0e-6*power);
 		else
-			return smprintf(BAT_STR, capacity, timeleft, (float)1.0e-6*power);
+			return smprintf(BAT_STR BAR, capacity, timeleft, (float)1.0e-6*power);
 	}
 }
 
