@@ -157,22 +157,22 @@ char *ipaddr(const char *ifname) {
 			continue;
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
-			return IF_DOWN;
+			return IF_DOWN BAR;
 		}
 	}
 	if (ifa == NULL) {
 		freeifaddrs(ifaddr);
-		return IF_DOWN;
+		return "";
 	}
 
 	memset(host, 0, sizeof(host));
 	if ((ret = getnameinfo(ifa->ifa_addr, len, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
-		return IP_NONE;
+		return IP_NONE BAR;
 	}
 	freeifaddrs(ifaddr);
-	return IP_ADDR;
+	return IP_ADDR BAR;
 }
 
 char *battery(void) {
@@ -253,5 +253,5 @@ char *new_mail(const char *maildir) {
 	if (n == 0)
 		return "";
 	else
-		return smprintf(MAIL_STR, n);
+		return smprintf(MAIL_STR BAR, n);
 }

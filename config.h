@@ -13,10 +13,12 @@
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
-/* mail */
-#define MAIL_STR     "\x01\uE013 %d \x09| "
+#define BAR " \x09| "
 
-/* volume percent */
+/* mail */
+#define MAIL_STR     "\x01\uE013 %d"
+
+/* volume level */
 #define VOL_STR      "\x07\uE010 %d%s"
 #define VOL_MUTE_STR "\x03\uE010 %d%s"
 
@@ -31,9 +33,9 @@
 #define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s"
 
 /* ip address */
-#define IP_ADDR      "\x04\uE015 \x09| "
-#define IP_NONE      "\x03\uE015 \x09| "
-#define IF_DOWN      "\x09\uE015 | "
+#define IP_ADDR      "\x04\uE015"
+#define IP_NONE      "\x03\uE015"
+#define IF_DOWN      "\x09\uE015"
 
 /* battery status, level, & time remaining */
 #define BAT_STR      "\x0A\uE00D %.1f%% (%02.2f) %2.2fW"
@@ -42,7 +44,7 @@
 #define BAT_FULL_STR "\x0A\uE00F %.1f%%"
 
 /* date */
-#define DATE_TIME_STR "\x05\uE011 %a %d %b %H:%M"
+#define DATE_TIME_STR "\x05%a %d %b %H:%M"
 
 /* status */
 #define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s%s \x09| %s"
