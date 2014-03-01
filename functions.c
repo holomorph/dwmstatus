@@ -160,6 +160,10 @@ char *ipaddr(const char *ifname) {
 			return IF_DOWN;
 		}
 	}
+	if (ifa == NULL) {
+		freeifaddrs(ifaddr);
+		return IF_DOWN;
+	}
 
 	memset(host, 0, sizeof(host));
 	if ((ret = getnameinfo(ifa->ifa_addr, len, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
