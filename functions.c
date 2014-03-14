@@ -57,7 +57,7 @@ char *coretemp(void) {
 	int temp;
 
 	if(!(f = fopen(CPU_TEMP0, "r")))
-		return '\0';
+		return "";
 	fscanf(f, "%d", &temp);
 	fclose(f);
 
@@ -122,13 +122,13 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 	char rxk[7], txk[7];
 
 	if(!(f = fopen(iface->rx, "r")))
-		return '\0';
+		return "";
 	else {
 		fscanf(f, "%ld", &iface->rx_bytes);
 		fclose(f);
 	}
 	if(!(f = fopen(iface->tx, "r")))
-		return '\0';
+		return "";
 	else {
 		fscanf(f, "%ld", &iface->tx_bytes);
 		fclose(f);
@@ -236,7 +236,7 @@ char *mktimes(int *tmsleep) {
 
 char *new_mail(const char *maildir) {
 	if(maildir == NULL)
-		return '\0';
+		return "";
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
