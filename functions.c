@@ -94,18 +94,14 @@ int network_init(Interface *iface, const char *ifname) {
 		fprintf(stderr, "cannot read %s\n", iface->rx);
 		return EXIT_FAILURE;
 	}
-	else {
-		fscanf(f,"%ld", &iface->rx_bytes);
-		fclose(f);
-	}
+	fscanf(f,"%ld", &iface->rx_bytes);
+	fclose(f);
 	if(!(f = fopen(iface->tx, "r"))) {
 		fprintf(stderr, "cannot read %s\n", iface->tx);
 		return EXIT_FAILURE;
 	}
-	else {
-		fscanf(f,"%ld", &iface->tx_bytes);
-		fclose(f);
-	}
+	fscanf(f,"%ld", &iface->tx_bytes);
+	fclose(f);
 	return EXIT_SUCCESS;
 }
 
@@ -121,16 +117,12 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 
 	if(!(f = fopen(iface->rx, "r")))
 		return "";
-	else {
-		fscanf(f, "%ld", &iface->rx_bytes);
-		fclose(f);
-	}
+	fscanf(f, "%ld", &iface->rx_bytes);
+	fclose(f);
 	if(!(f = fopen(iface->tx, "r")))
 		return "";
-	else {
-		fscanf(f, "%ld", &iface->tx_bytes);
-		fclose(f);
-	}
+	fscanf(f, "%ld", &iface->tx_bytes);
+	fclose(f);
 
 	sprintf(rxk, "%.1f", (float)(iface->rx_bytes-rx_old)/1024/INTERVAL);
 	sprintf(txk, "%.1f", (float)(iface->tx_bytes-tx_old)/1024/INTERVAL);
