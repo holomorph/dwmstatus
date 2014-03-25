@@ -41,20 +41,20 @@ int runevery(time_t *ltime, int sec) {
 
 char *loadavg(void) {
 	double avgs[3];
+	unsigned int hi;
 
 	if (getloadavg(avgs, 3) < 0) {
 		perror("getloadavg");
 		exit(EXIT_FAILURE);
 	}
-	if(avgs[0] > LOAD_HI)
-		return smprintf(CPU_HI_STR, avgs[0], avgs[1], avgs[2]);
-	else
-		return smprintf(CPU_STR, avgs[0], avgs[1], avgs[2]);
+	hi = (avgs[0] > LOAD_HI);
+	return smprintf((hi ? CPU_HI_STR : CPU_STR), avgs[0], avgs[1], avgs[2]);
 }
 
 char *coretemp(void) {
 	FILE *f;
 	int temp;
+	unsigned int hi;
 
 	if(!(f = fopen(CPU_TEMP0, "r")))
 		return "";
@@ -62,10 +62,8 @@ char *coretemp(void) {
 	fclose(f);
 
 	temp /= 1000;
-	if (temp >= TEMP_HI)
-		return smprintf(TEMP_HI_STR, temp);
-	else
-		return smprintf(TEMP_STR, temp);
+	hi = (temp >= TEMP_HI);
+	return smprintf((hi ? TEMP_HI_STR : TEMP_STR), temp);
 }
 
 char *memory(void) {
@@ -180,6 +178,7 @@ char *battery(void) {
 	long now, full, power;
 	char status[11];
 	float capacity, timeleft;
+	unsigned int low;
 
 	if(!(f = fopen(BATT_NOW, "r")))
 		return "";
@@ -205,10 +204,8 @@ char *battery(void) {
 		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
-		if (capacity < BATT_LOW)
-			return smprintf(BAT_LOW_STR BAR, capacity, timeleft, (float)1.0e-6*power);
-		else
-			return smprintf(BAT_STR BAR, capacity, timeleft, (float)1.0e-6*power);
+		low = (capacity < BATT_LOW);
+		return smprintf((low ? BAT_LOW_STR BAR : BAT_STR BAR), capacity, timeleft, (float)1.0e-6*power);
 	}
 }
 
