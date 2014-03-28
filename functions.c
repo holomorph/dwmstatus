@@ -223,6 +223,12 @@ char *mktimes(int *tmsleep) {
 	return smprintf("%s", buf);
 }
 
+char *get_maildir(const char *maildir) {
+	if(!maildir || maildir[0] == '\0')
+		return NULL;
+	return smprintf("%s/%s/new", maildir, MAIL_BOX);
+}
+
 char *new_mail(const char *maildir) {
 	if(maildir == NULL)
 		return "";

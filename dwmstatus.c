@@ -27,6 +27,7 @@ static char *date;
 static struct {
 	const char *iface;
 	const char *maildir;
+	const char *mailbox;
 } cfg;
 
 static void setstatus(char *str) {
@@ -75,6 +76,7 @@ static int dwmstatus_init(void) {
 	 * - network info struct
 	 * - read initial rx/tx values
 	 * - connection to the pulse server
+	 * - mailbox location
 	 */
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr, "cannot open display\n");
@@ -94,7 +96,7 @@ static int dwmstatus_init(void) {
 
 	if(pulse_init(&pulse) != 0)
 		pa = 0;
-
+	cfg.mailbox = get_maildir(cfg.maildir);
 	return EXIT_SUCCESS;
 }
 
@@ -109,6 +111,7 @@ int main(int argc, char *argv[]) {
 	time_t count180 = 0;
 	int tmsleep = 0;
 
+	cfg.maildir = getenv("MAILDIR");
 	parse_args(&argc, &argv);
 
 	if (dwmstatus_init()) {
@@ -123,7 +126,7 @@ int main(int argc, char *argv[]) {
 			batt = battery();
 			date = mktimes(&tmsleep);
 			if(runevery(&count180, 180)) {
-				mail = new_mail(cfg.maildir);
+				mail = new_mail(cfg.mailbox);
 			}
 		}
 

@@ -1,5 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
+#define MAIL_BOX "inbox"
+
 #define BATT_LOW 10 /* Upper threshold for urgent battery percent */
 #define LOAD_HI  1  /* Lower threshold for urgent cpu load */
 #define TEMP_HI  75 /* Lower threshold for urgent core temp */

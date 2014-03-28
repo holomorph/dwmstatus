@@ -24,4 +24,5 @@ char *network(Interface *iface, long rx_old, long tx_old);
 char *ipaddr(const char *ifname);
 char *battery(void);
 char *mktimes(int *tmsleep);
+char *get_maildir(const char *maildir);
 char *new_mail(const char *maildir);
