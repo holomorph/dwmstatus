@@ -1,5 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
+#include "util.h"
+
 typedef struct {
 	const char *name;
 	char *rx;
@@ -7,10 +9,6 @@ typedef struct {
 	long rx_bytes;
 	long tx_bytes;
 } Interface;
-
-/* utility functions */
-char *smprintf(const char *fmt, ...) __attribute__((format (printf, 1, 2)));
-int runevery(time_t *ltime, int sec);
 
 /* control abstractions */
 int network_init(Interface *iface, const char *ifname);

@@ -2,7 +2,7 @@
 
 include config.mk
 
-SRC = ${NAME}.c functions.c alsa.c pulse.c
+SRC = ${NAME}.c functions.c alsa.c pulse.c util.c
 OBJ = ${SRC:.c=.o}
 
 all: options ${NAME}

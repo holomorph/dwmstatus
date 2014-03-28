@@ -43,7 +43,7 @@ char *alsaprint(void) {
   fflush(stdout);
   snd_mixer_handle_events(alsa);
   alsa_deinit(alsa);
-  return smprintf((mute ? VOL_STR : VOL_MUTE_STR), vol, "dB");
+  return smprintf((mute ? VOL_STR : VOL_MUTE_STR), (int)vol, "dB");
 }
 
 /* vim: set ts=2 sw=2 et: */

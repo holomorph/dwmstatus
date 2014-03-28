@@ -14,31 +14,6 @@
 #include "config.h"
 #include "functions.h"
 
-char *smprintf(const char *fmt, ...) {
-  char *buf;
-  va_list ap;
-  int ret;
-
-  va_start(ap, fmt);
-  ret = vasprintf(&buf, fmt, ap);
-  va_end(ap);
-
-  if(ret < 0)
-    return NULL;
-  return buf;
-}
-
-int runevery(time_t *ltime, int sec) {
-	time_t now = time(NULL);
-
-	if (difftime(now, *ltime) >= sec) {
-		*ltime = now;
-		return EXIT_FAILURE;
-	}
-	else
-		return EXIT_SUCCESS;
-}
-
 char *loadavg(void) {
 	double avgs[3];
 	unsigned int hi;

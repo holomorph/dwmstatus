@@ -89,6 +89,16 @@ static int dwmstatus_init(void) {
 	return EXIT_SUCCESS;
 }
 
+static int runevery(time_t *ltime, int sec) {
+	time_t now = time(NULL);
+
+	if (difftime(now, *ltime) >= sec) {
+		*ltime = now;
+		return EXIT_FAILURE;
+	}
+	return EXIT_SUCCESS;
+}
+
 static char *volume(void) {
 	if(pa)
 		return ponyprint(pulse, &pa);
@@ -109,7 +119,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	for(;;sleep(INTERVAL)) {
-
 		if(runevery(&count60, tmsleep)) {
 			addr = ipaddr(cfg.iface);
 			batt = battery();
@@ -118,7 +127,6 @@ int main(int argc, char *argv[]) {
 				mail = new_mail(cfg.mailbox);
 			}
 		}
-
 		status = smprintf(STATUS, mail, volume(), loadavg(), coretemp(), memory(), network(iface, rx_old, tx_old), addr, batt, date);
 		rx_old = iface->rx_bytes;
 		tx_old = iface->tx_bytes;
