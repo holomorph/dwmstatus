@@ -35,17 +35,6 @@ static void setstatus(char *str) {
 	XSync(dpy, False);
 }
 
-static void cleanup(void) {
-	free(mail);
-	free(addr);
-	free(batt);
-	free(date);
-	free(status);
-	network_deinit(iface);
-	pulse_deinit(&pulse);
-	XCloseDisplay(dpy);
-}
-
 static void parse_args(int *argc, char **argv[]) {
 	static const struct option opts[] = {
 		{ "interface", required_argument, 0, 'i' },
@@ -137,6 +126,5 @@ int main(int argc, char *argv[]) {
 		setstatus(status);
 	}
 
-	cleanup();
 	return EXIT_SUCCESS;
 }
