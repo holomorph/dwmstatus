@@ -50,7 +50,7 @@ void io_list_add(struct io_t **list, struct io_t *node) {
 }
 
 void populate_levels(struct io_t *node) {
-  node->volume_percent = (int)(((double)pa_cvolume_avg(&node->volume) * 100)
+  node->volume_percent = (int)((pa_cvolume_avg(&node->volume) * 100)
                                / PA_VOLUME_NORM);
 }
 
