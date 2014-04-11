@@ -51,6 +51,7 @@ char *memory(void) {
 	}
 	fscanf(f, "MemTotal:%d kB\n", &total);
 	fscanf(f, "MemFree:%d kB\n",  &free);
+	fscanf(f, "MemAvailable:%*d kB\n");
 	fscanf(f, "Buffers:%d kB\n",  &buffers);
 	fscanf(f, "Cached:%d kB\n",   &cached);
 	fclose(f);
