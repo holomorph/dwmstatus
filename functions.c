@@ -162,9 +162,9 @@ char *battery(void) {
 	fclose(f);
 
 	capacity = (float) 100*now/full;
-	if (strncmp(status, "Charging", 8) == 0)
+	if (strcmp(status, "Charging") == 0)
 		return smprintf(BAT_CHRG_STR BAR, capacity);
-	else if (strncmp(status, "Full", 8) == 0 || strncmp(status, "Unknown", 8) == 0)
+	else if (strcmp(status, "Full") == 0 || strcmp(status, "Unknown") == 0)
 		return smprintf(BAT_FULL_STR BAR, capacity);
 	else {
 		if (!(f = fopen(BATT_POW,"r")))
