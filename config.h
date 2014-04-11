@@ -15,8 +15,6 @@
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
 #define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
 
-#define BAR " \x09| "
-
 /* mail */
 #define MAIL_STR     "\x01\uE013 %d"
 
@@ -47,6 +45,3 @@
 
 /* date */
 #define DATE_TIME_STR "\x05%a %d %b %H:%M"
-
-/* status */
-#define STATUS "%s%s \x09| %s \x09| %s \x09| %s \x09| %s \x09| %s%s%s"

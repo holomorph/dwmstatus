@@ -1,5 +1,5 @@
 /* See LICENSE file for copyright and license details. */
-#define _GNU_SOURCE
+#define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -32,7 +32,7 @@ char *coretemp(void) {
 	unsigned int hi;
 
 	if(!(f = fopen(CPU_TEMP0, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%d", &temp);
 	fclose(f);
 
@@ -92,11 +92,11 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 	char rxk[7], txk[7];
 
 	if(!(f = fopen(iface->rx, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%ld", &iface->rx_bytes);
 	fclose(f);
 	if(!(f = fopen(iface->tx, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%ld", &iface->tx_bytes);
 	fclose(f);
 
@@ -123,22 +123,22 @@ char *ipaddr(const char *ifname) {
 			continue;
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
-			return IF_DOWN BAR;
+			return (char *)IF_DOWN;
 		}
 	}
 	if (ifa == NULL) {
 		freeifaddrs(ifaddr);
-		return "";
+		return NULL;
 	}
 
 	memset(host, 0, sizeof(host));
 	if ((ret = getnameinfo(ifa->ifa_addr, len, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
-		return IP_NONE BAR;
+		return (char *)IP_NONE;
 	}
 	freeifaddrs(ifaddr);
-	return IP_ADDR BAR;
+	return (char *)IP_ADDR;
 }
 
 char *battery(void) {
@@ -149,31 +149,31 @@ char *battery(void) {
 	unsigned int low;
 
 	if(!(f = fopen(BATT_NOW, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%ld", &now);
 	fclose(f);
 	if(!(f = fopen(BATT_FULL, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%ld", &full);
 	fclose(f);
 	if(!(f = fopen(BATT_STAT, "r")))
-		return "";
+		return NULL;
 	fscanf(f, "%s", status);
 	fclose(f);
 
 	capacity = (float) 100*now/full;
 	if (strcmp(status, "Charging") == 0)
-		return smprintf(BAT_CHRG_STR BAR, capacity);
+		return smprintf(BAT_CHRG_STR, capacity);
 	else if (strcmp(status, "Full") == 0 || strcmp(status, "Unknown") == 0)
-		return smprintf(BAT_FULL_STR BAR, capacity);
+		return smprintf(BAT_FULL_STR, capacity);
 	else {
 		if (!(f = fopen(BATT_POW,"r")))
-			return "";
+			return NULL;
 		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
 		low = (capacity < BATT_LOW);
-		return smprintf((low ? BAT_LOW_STR BAR : BAT_STR BAR), capacity, timeleft, (float)1.0e-6*power);
+		return smprintf((low ? BAT_LOW_STR : BAT_STR), capacity, timeleft, (float)1.0e-6*power);
 	}
 }
 
@@ -207,7 +207,7 @@ char *get_maildir(const char *maildir) {
 
 char *new_mail(const char *maildir) {
 	if(maildir == NULL)
-		return "";
+		return NULL;
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
@@ -222,7 +222,7 @@ char *new_mail(const char *maildir) {
 	}
 	closedir(d);
 	if (n == 0)
-		return "";
+		return NULL;
 	else
-		return smprintf(MAIL_STR BAR, n);
+		return smprintf(MAIL_STR, n);
 }

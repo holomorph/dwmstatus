@@ -34,9 +34,9 @@ char *alsaprint(void) {
   long vol;
 
   if(!(alsa = alsa_init("default")))
-    return "";
+    return NULL;
   if(!(mixer = alsa_mixer(alsa, "Master")))
-    return "";
+    return NULL;
   snd_mixer_selem_get_playback_switch(mixer, SND_MIXER_SCHN_MONO, &mute);
   snd_mixer_selem_get_playback_volume(mixer, SND_MIXER_SCHN_MONO, &vol);
   vol = vol - 64;

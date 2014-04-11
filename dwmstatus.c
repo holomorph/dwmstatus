@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <time.h>
 #include <getopt.h>
 #include <X11/Xlib.h>
@@ -105,6 +106,48 @@ static char *volume(void) {
 	return alsaprint();
 }
 
+static char *render_table(char **table, size_t table_len, const char *sep) {
+	size_t i, len = 0, slen = strlen(sep);
+	char *ret = NULL, *p;
+	unsigned int n = 0, k = 0, first = 0;
+
+	/* find the number n of nonempty elements and total buffer length */
+	for (i = 0; i < table_len; ++i)
+		if (table[i]) {
+			len += strlen(table[i]);
+			n++;
+			if (n > 1)
+				len += slen;
+		}
+
+	ret = malloc(++len);
+	if (!ret) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+
+	/* print the first element if it exists */
+	while (table[first] == NULL)
+		first++;
+	if (first < len) {
+		p = stpcpy(ret, table[first]);
+		k++;
+	}
+	else {
+		free(ret);
+		return NULL;
+	}
+
+	/* print the rest */
+	for (i = ++first; (i < --len && k < n); ++i)
+		if (table[i]) {
+			p = stpcpy(p, sep);
+			p = stpcpy(p, table[i]);
+			k++;
+		}
+	return ret;
+}
+
 int main(int argc, char *argv[]) {
 	time_t count60 = 0;
 	time_t count180 = 0;
@@ -127,7 +170,20 @@ int main(int argc, char *argv[]) {
 				mail = new_mail(cfg.mailbox);
 			}
 		}
-		status = smprintf(STATUS, mail, volume(), loadavg(), coretemp(), memory(), network(iface, rx_old, tx_old), addr, batt, date);
+
+		char *table[] = {
+			mail,
+			volume(),
+			loadavg(),
+			coretemp(),
+			memory(),
+			network(iface, rx_old, tx_old),
+			addr,
+			batt,
+			date
+		};
+
+		status = render_table(table, sizeof(table) / sizeof(table[0]), " \x09| ");
 		rx_old = iface->rx_bytes;
 		tx_old = iface->tx_bytes;
 
