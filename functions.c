@@ -101,7 +101,7 @@ char *network(Interface *iface, long rx_old, long tx_old) {
 
 	sprintf(rxk, "%.1f", (float)(iface->rx_bytes-rx_old)/1024/INTERVAL);
 	sprintf(txk, "%.1f", (float)(iface->tx_bytes-tx_old)/1024/INTERVAL);
-	return smprintf(WIFI_STR, rxk, txk);
+	return smprintf(NET_STR, rxk, txk);
 }
 
 char *ipaddr(const char *ifname) {
@@ -122,7 +122,8 @@ char *ipaddr(const char *ifname) {
 			continue;
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
-			return (char *)IF_DOWN;
+			/* iface is down */
+			return smprintf(NET_ICON, "\x09");
 		}
 	}
 	if (ifa == NULL) {
@@ -134,10 +135,11 @@ char *ipaddr(const char *ifname) {
 	if ((ret = getnameinfo(ifa->ifa_addr, len, host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST)) != 0) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
-		return (char *)IP_NONE;
+		/* no address */
+		return smprintf(NET_ICON, "\x03");
 	}
 	freeifaddrs(ifaddr);
-	return (char *)IP_ADDR;
+	return smprintf(NET_ICON, "\x04");
 }
 
 char *battery(void) {

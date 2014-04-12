@@ -29,13 +29,9 @@
 #define TEMP_HI_STR  "\x03\uE007 %dC"
 #define MEM_STR      "\x01\uE008 %dM"
 
-/* network rates */
-#define WIFI_STR     "\x07\uE009 %-4s \x06\uE00A %-3s"
-
-/* ip address */
-#define IP_ADDR      "\x04\uE015"
-#define IP_NONE      "\x03\uE015"
-#define IF_DOWN      "\x09\uE015"
+/* network */
+#define NET_STR      "\x07\uE009 %-4s \x06\uE00A %-3s"
+#define NET_ICON     "%s\uE015"
 
 /* battery status, level, & time remaining */
 #define BAT_STR      "\x0A\uE00D %.1f%% (%02.2f) %2.2fW"
