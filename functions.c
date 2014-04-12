@@ -1,5 +1,4 @@
 /* See LICENSE file for copyright and license details. */
-#define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>

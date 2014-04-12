@@ -27,7 +27,6 @@
 /* modified from tag v1.0
  * https://github.com/falconindy/ponymix/tree/d5eeab4 */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 

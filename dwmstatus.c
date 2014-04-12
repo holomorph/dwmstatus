@@ -109,41 +109,32 @@ static char *volume(void) {
 static char *render_table(char **table, size_t table_len, const char *sep) {
 	size_t i, len = 0, slen = strlen(sep);
 	char *ret = NULL, *p;
-	unsigned int n = 0, k = 0, first = 0;
+	unsigned int first;
 
-	/* find the number n of nonempty elements and total buffer length */
-	for (i = 0; i < table_len; ++i)
-		if (table[i]) {
-			len += strlen(table[i]);
-			n++;
-			if (n > 1)
-				len += slen;
-		}
+	/* find the first item */
+	for (first = 0; first < table_len && table[first] == NULL; ++first);
+	/* make sure there is at least one item */
+	if (first == table_len)
+		return NULL;
+	/* add the length of the first item to the rest */
+	len = strlen(table[first]);
+	for (i = first + 1; i < table_len; ++i) {
+		if (table[i])
+			len += strlen(table[i]) + slen;
+	}
 
-	ret = malloc(++len);
+	ret = malloc(len + 1);
 	if (!ret) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
 
-	/* print the first element if it exists */
-	while (table[first] == NULL)
-		first++;
-	if (first < len) {
-		p = stpcpy(ret, table[first]);
-		k++;
-	}
-	else {
-		free(ret);
-		return NULL;
-	}
-
-	/* print the rest */
-	for (i = ++first; (i < --len && k < n); ++i)
+	/* print the first element then the rest */
+	p = stpcpy(ret, table[first]);
+	for (i = first + 1; i < table_len; ++i)
 		if (table[i]) {
 			p = stpcpy(p, sep);
 			p = stpcpy(p, table[i]);
-			k++;
 		}
 	return ret;
 }
