@@ -171,23 +171,37 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		char *volume_str = volume();
+		char *loadavg_str = loadavg();
+		char *coretemp_str = coretemp();
+		char *memory_str = memory();
+		char *network_str = network(iface, rx_old, tx_old);
+
+		rx_old = iface->rx_bytes;
+		tx_old = iface->tx_bytes;
+
 		char *table[] = {
 			mail,
-			volume(),
-			loadavg(),
-			coretemp(),
-			memory(),
-			network(iface, rx_old, tx_old),
+			volume_str,
+			loadavg_str,
+			coretemp_str,
+			memory_str,
+			network_str,
 			addr,
 			batt,
 			date
 		};
+		const size_t len = sizeof(table) / sizeof(table[0]);
+		size_t i;
 
-		status = render_table(table, sizeof(table) / sizeof(table[0]), " \x09| ");
-		rx_old = iface->rx_bytes;
-		tx_old = iface->tx_bytes;
-
+		status = render_table(table, len, " \x09| ");
 		setstatus(status);
+
+		free(volume_str);
+		free(loadavg_str);
+		free(coretemp_str);
+		free(memory_str);
+		free(network_str);
 	}
 
 	return EXIT_SUCCESS;
