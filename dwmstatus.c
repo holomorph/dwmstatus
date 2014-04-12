@@ -111,12 +111,9 @@ static char *render_table(char **table, size_t table_len, const char *sep) {
 	char *ret = NULL, *p;
 	unsigned int first;
 
-	/* find the first item */
 	for (first = 0; first < table_len && table[first] == NULL; ++first);
-	/* make sure there is at least one item */
 	if (first == table_len)
 		return NULL;
-	/* add the length of the first item to the rest */
 	len = strlen(table[first]);
 	for (i = first + 1; i < table_len; ++i) {
 		if (table[i])
@@ -129,7 +126,6 @@ static char *render_table(char **table, size_t table_len, const char *sep) {
 		exit(EXIT_FAILURE);
 	}
 
-	/* print the first element then the rest */
 	p = stpcpy(ret, table[first]);
 	for (i = first + 1; i < table_len; ++i)
 		if (table[i]) {
