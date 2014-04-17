@@ -11,7 +11,7 @@ typedef struct {
 } Interface;
 
 /* control abstractions */
-int network_init(Interface *iface, const char *ifname);
+void *network_init(const char *ifname);
 void network_deinit(Interface *iface);
 char *get_maildir(const char *maildir);
 

@@ -68,14 +68,7 @@ static int dwmstatus_init(void) {
 		return EXIT_FAILURE;
 	}
 
-	if(!(iface = malloc(sizeof(Interface)))) {
-		fprintf(stderr, "iface malloc failed");
-		return EXIT_FAILURE;
-	}
-	if(network_init(iface, cfg.iface)) {
-		network_deinit(iface);
-		return EXIT_FAILURE;
-	}
+	iface = network_init(cfg.iface);
 	rx_old = iface->rx_bytes;
 	tx_old = iface->tx_bytes;
 

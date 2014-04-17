@@ -48,10 +48,8 @@ void memory(buffer_t *buf) {
 	FILE *f;
 	int total, free, buffers, cached, used;
 
-	if(!(f = fopen(MEM_FILE, "r"))) {
-		fprintf(stderr, "cannot read %s\n", MEM_FILE);
-		exit(EXIT_FAILURE);
-	}
+	if(!(f = fopen(MEM_FILE, "r")))
+		err(errno, "cannot read %s", MEM_FILE);
 	fscanf(f, "MemTotal:%d kB\n", &total);
 	fscanf(f, "MemFree:%d kB\n",  &free);
 	fscanf(f, "MemAvailable:%*d kB\n");
@@ -63,25 +61,28 @@ void memory(buffer_t *buf) {
 	buffer_printf(buf, MEM_STR, used);
 }
 
-int network_init(Interface *iface, const char *ifname) {
-	iface->name = ifname;
-	iface->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
-	iface->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
+void *network_init(const char *ifname) {
+	Interface *p = malloc(sizeof(Interface));
+	if(!p)
+		err(errno, "iface malloc");
+	p->name = ifname;
+	p->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
+	p->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
 	FILE *f;
 
-	if(!(f = fopen(iface->rx, "r"))) {
-		fprintf(stderr, "cannot read %s\n", iface->rx);
-		return EXIT_FAILURE;
+	if(!(f = fopen(p->rx, "r"))) {
+		network_deinit(p);
+		err(errno, "%s", ifname);
 	}
-	fscanf(f,"%ld", &iface->rx_bytes);
+	fscanf(f,"%ld", &p->rx_bytes);
 	fclose(f);
-	if(!(f = fopen(iface->tx, "r"))) {
-		fprintf(stderr, "cannot read %s\n", iface->tx);
-		return EXIT_FAILURE;
+	if(!(f = fopen(p->tx, "r"))) {
+		network_deinit(p);
+		err(errno, "%s", ifname);
 	}
-	fscanf(f,"%ld", &iface->tx_bytes);
+	fscanf(f,"%ld", &p->tx_bytes);
 	fclose(f);
-	return EXIT_SUCCESS;
+	return p;
 }
 
 void network_deinit(Interface *iface) {
@@ -234,10 +235,8 @@ void new_mail(buffer_t *buf, const char *maildir) {
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
 
-	if(!(d = opendir(maildir))) {
-		fprintf(stderr, "cannot read directory %s\n", maildir);
-		exit(EXIT_FAILURE);
-	}
+	if(!(d = opendir(maildir)))
+		err(errno, "cannot read directory %s", maildir);
 	while ((rf = readdir(d)) != NULL) {
 		if (strcmp(rf->d_name, ".") != 0 && strcmp(rf->d_name, "..") != 0)
 			n++;
