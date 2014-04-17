@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <alloca.h>
-#include <alsa/asoundlib.h>
 
 #include "alsa.h"
 #include "config.h"
@@ -27,23 +26,27 @@ static snd_mixer_elem_t* alsa_mixer(snd_mixer_t *handle, const char *mixer) {
   return snd_mixer_find_selem(handle, sid);
 }
 
-char *alsaprint(void) {
+void alsaprint(buffer_t *buf) {
   snd_mixer_t *alsa;
   snd_mixer_elem_t *mixer;
   int mute;
   long vol;
 
-  if(!(alsa = alsa_init("default")))
-    return NULL;
-  if(!(mixer = alsa_mixer(alsa, "Master")))
-    return NULL;
+  if(!(alsa = alsa_init("default"))) {
+    buffer_clear(buf);
+    return;
+  }
+  if(!(mixer = alsa_mixer(alsa, "Master"))) {
+    buffer_clear(buf);
+    return;
+  }
   snd_mixer_selem_get_playback_switch(mixer, SND_MIXER_SCHN_MONO, &mute);
   snd_mixer_selem_get_playback_volume(mixer, SND_MIXER_SCHN_MONO, &vol);
   vol = vol - 64;
   fflush(stdout);
   snd_mixer_handle_events(alsa);
   alsa_deinit(alsa);
-  return smprintf((mute ? VOL_STR : VOL_MUTE_STR), (int)vol, "dB");
+  buffer_printf(buf, mute ? VOL_STR : VOL_MUTE_STR, (int)vol, "dB");
 }
 
 /* vim: set ts=2 sw=2 et: */

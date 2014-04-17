@@ -30,10 +30,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "config.h"
 #include "pulse.h"
 #include "util.h"
 
-void io_list_add(struct io_t **list, struct io_t *node) {
+static void io_list_add(struct io_t **list, struct io_t *node) {
   struct io_t *head = *list;
 
   if (head == NULL)
@@ -47,12 +48,12 @@ void io_list_add(struct io_t **list, struct io_t *node) {
   *list = head;
 }
 
-void populate_levels(struct io_t *node) {
+static void populate_levels(struct io_t *node) {
   node->volume_percent = (int)((pa_cvolume_avg(&node->volume) * 100)
                                / PA_VOLUME_NORM);
 }
 
-struct io_t *sink_new(const pa_sink_info *info) {
+static struct io_t *sink_new(const pa_sink_info *info) {
   struct io_t *sink;
 
   IO_NEW(sink, info, "sink");
@@ -61,7 +62,7 @@ struct io_t *sink_new(const pa_sink_info *info) {
   return sink;
 }
 
-void sink_add_cb(pa_context UNUSED *c, const pa_sink_info *i, int eol, void *raw) {
+static void sink_add_cb(pa_context UNUSED *c, const pa_sink_info *i, int eol, void *raw) {
   struct cb_data_t *pony = raw;
   if (eol)
     return;
@@ -70,18 +71,18 @@ void sink_add_cb(pa_context UNUSED *c, const pa_sink_info *i, int eol, void *raw
   io_list_add(pony->list, sink_new(i));
 }
 
-void server_info_cb(pa_context UNUSED *c, const pa_server_info *i, void *raw) {
+static void server_info_cb(pa_context UNUSED *c, const pa_server_info *i, void *raw) {
   struct pulseaudio_t *pulse = raw;
   pulse->default_sink = strdup(i->default_sink_name);
   pulse->default_source = strdup(i->default_source_name);
 }
 
-void connect_state_cb(pa_context *cxt, void *raw) {
+static void connect_state_cb(pa_context *cxt, void *raw) {
   enum pa_context_state *state = raw;
   *state = pa_context_get_state(cxt);
 }
 
-void pulse_async_wait(struct pulseaudio_t *pulse, pa_operation *op) {
+static void pulse_async_wait(struct pulseaudio_t *pulse, pa_operation *op) {
   while (pa_operation_get_state(op) == PA_OPERATION_RUNNING)
     pa_mainloop_iterate(pulse->mainloop, 1, NULL);
 }
@@ -130,16 +131,17 @@ void pulse_deinit(struct pulseaudio_t *pulse) {
   free(pulse->default_source);
 }
 
-char *ponyprint(struct pulseaudio_t pulse, int *pa_running) {
+void ponyprint(buffer_t *buf, struct pulseaudio_t pulse, int *pa_running) {
   struct arg_t arg = { 0, NULL, NULL };
 
   get_default_sink(&pulse, &arg.devices);
   if(!arg.devices) {
     fprintf(stderr, "bestpony died\n");
     *pa_running = 0;
-    return smprintf(VOL_MUTE_STR, 0, "X");
+    buffer_printf(buf, VOL_MUTE_STR, 0, "X");
   }
-  return smprintf((arg.devices->mute ? VOL_MUTE_STR : VOL_STR), arg.devices->volume_percent, "%");
+  else
+    buffer_printf(buf, arg.devices->mute ? VOL_MUTE_STR : VOL_STR, arg.devices->volume_percent, "%");
 }
 
 /* vim: set ts=2 sw=2 et: */

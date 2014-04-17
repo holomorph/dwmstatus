@@ -30,7 +30,7 @@
 
 #include <pulse/pulseaudio.h>
 
-#include "config.h"
+#include "util.h"
 
 #define UNUSED __attribute__((unused))
 #define IO_NEW(io, info, pp) \
@@ -72,16 +72,9 @@ struct arg_t {
   struct io_t *target;
 };
 
-void io_list_add(struct io_t **list, struct io_t *node);
-void populate_levels(struct io_t *node);
-struct io_t *sink_new(const pa_sink_info *info);
-void sink_add_cb(pa_context UNUSED *c, const pa_sink_info *i, int eol, void *raw);
-void server_info_cb(pa_context UNUSED *c, const pa_server_info *i, void *raw);
-void connect_state_cb(pa_context *cxt, void *raw);
-void pulse_async_wait(struct pulseaudio_t *pulse, pa_operation *op);
 int get_default_sink(struct pulseaudio_t *pulse, struct io_t **list);
 int pulse_init(struct pulseaudio_t *pulse);
 void pulse_deinit(struct pulseaudio_t *pulse);
-char *ponyprint(struct pulseaudio_t pulse, int *pa_running);
+void ponyprint(buffer_t *buf, struct pulseaudio_t pulse, int *pa_running);
 
 /* vim: set ts=2 sw=2 et: */

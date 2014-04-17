@@ -13,14 +13,15 @@ typedef struct {
 /* control abstractions */
 int network_init(Interface *iface, const char *ifname);
 void network_deinit(Interface *iface);
+char *get_maildir(const char *maildir);
 
 /* status elements */
-char *loadavg(void);
-char *coretemp(void);
-char *memory(void);
-char *network(Interface *iface, long rx_old, long tx_old);
-char *ipaddr(const char *ifname);
-char *battery(void);
-char *mktimes(int *tmsleep);
-char *get_maildir(const char *maildir);
-char *new_mail(const char *maildir);
+void loadavg(buffer_t *buf);
+void coretemp(buffer_t *buf);
+void memory(buffer_t *buf);
+void network(buffer_t *buf, Interface *iface, long rx_old, long tx_old);
+void ipaddr(buffer_t *buf, const char *ifname);
+void battery(buffer_t *buf);
+void mktimes(buffer_t *buf, int *tmsleep);
+void new_mail(buffer_t *buf, const char *maildir);
+

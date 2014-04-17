@@ -5,6 +5,8 @@
 #include <string.h>
 #include <time.h>
 #include <dirent.h>
+#include <err.h>
+#include <errno.h>
 
 #include <ifaddrs.h>
 #include <netdb.h>
@@ -13,7 +15,7 @@
 #include "config.h"
 #include "functions.h"
 
-char *loadavg(void) {
+void loadavg(buffer_t *buf) {
 	double avgs[3];
 	unsigned int hi;
 
@@ -22,25 +24,27 @@ char *loadavg(void) {
 		exit(EXIT_FAILURE);
 	}
 	hi = (avgs[0] > LOAD_HI);
-	return smprintf((hi ? CPU_HI_STR : CPU_STR), avgs[0], avgs[1], avgs[2]);
+	buffer_printf(buf, hi ? CPU_HI_STR : CPU_STR, avgs[0], avgs[1], avgs[2]);
 }
 
-char *coretemp(void) {
+void coretemp(buffer_t *buf) {
 	FILE *f;
 	int temp;
 	unsigned int hi;
 
-	if(!(f = fopen(CPU_TEMP0, "r")))
-		return NULL;
+	if(!(f = fopen(CPU_TEMP0, "r"))) {
+		buffer_clear(buf);
+		return;
+	}
 	fscanf(f, "%d", &temp);
 	fclose(f);
 
 	temp /= 1000;
 	hi = (temp >= TEMP_HI);
-	return smprintf((hi ? TEMP_HI_STR : TEMP_STR), temp);
+	buffer_printf(buf, hi ? TEMP_HI_STR : TEMP_STR, temp);
 }
 
-char *memory(void) {
+void memory(buffer_t *buf) {
 	FILE *f;
 	int total, free, buffers, cached, used;
 
@@ -56,7 +60,7 @@ char *memory(void) {
 	fclose(f);
 
 	used = (total - free - buffers - cached)/1024;
-	return smprintf(MEM_STR, used);
+	buffer_printf(buf, MEM_STR, used);
 }
 
 int network_init(Interface *iface, const char *ifname) {
@@ -86,25 +90,29 @@ void network_deinit(Interface *iface) {
 	free(iface);
 }
 
-char *network(Interface *iface, long rx_old, long tx_old) {
+void network(buffer_t *buf, Interface *iface, long rx_old, long tx_old) {
 	FILE *f;
 	char rxk[7], txk[7];
 
-	if(!(f = fopen(iface->rx, "r")))
-		return NULL;
+	if(!(f = fopen(iface->rx, "r"))) {
+        buffer_clear(buf);
+		return;
+    }
 	fscanf(f, "%ld", &iface->rx_bytes);
 	fclose(f);
-	if(!(f = fopen(iface->tx, "r")))
-		return NULL;
+	if(!(f = fopen(iface->tx, "r"))) {
+        buffer_clear(buf);
+		return;
+    }
 	fscanf(f, "%ld", &iface->tx_bytes);
 	fclose(f);
 
 	sprintf(rxk, "%.1f", (float)(iface->rx_bytes-rx_old)/1024/INTERVAL);
 	sprintf(txk, "%.1f", (float)(iface->tx_bytes-tx_old)/1024/INTERVAL);
-	return smprintf(NET_STR, rxk, txk);
+	buffer_printf(buf, NET_STR, rxk, txk);
 }
 
-char *ipaddr(const char *ifname) {
+void ipaddr(buffer_t *buf, const char *ifname) {
 	struct ifaddrs *ifaddr, *ifa;
 	socklen_t len = sizeof(struct sockaddr_in);
 	char host[NI_MAXHOST];
@@ -123,12 +131,14 @@ char *ipaddr(const char *ifname) {
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
 			/* iface is down */
-			return smprintf(NET_ICON, "\x09");
+			buffer_printf(buf, NET_ICON, "\x09");
+			return;
 		}
 	}
 	if (ifa == NULL) {
 		freeifaddrs(ifaddr);
-		return NULL;
+		buffer_clear(buf);
+		return;
 	}
 
 	memset(host, 0, sizeof(host));
@@ -136,54 +146,63 @@ char *ipaddr(const char *ifname) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
 		/* no address */
-		return smprintf(NET_ICON, "\x03");
+		buffer_printf(buf, NET_ICON, "\x03");
+		return;
 	}
 	freeifaddrs(ifaddr);
-	return smprintf(NET_ICON, "\x04");
+	buffer_printf(buf, NET_ICON, "\x04");
 }
 
-char *battery(void) {
+void battery(buffer_t *buf) {
 	FILE *f = NULL;
 	long now, full, power;
 	char status[11];
 	float capacity, timeleft;
 	unsigned int low;
 
-	if(!(f = fopen(BATT_NOW, "r")))
-		return NULL;
+	if(!(f = fopen(BATT_NOW, "r"))) {
+		buffer_clear(buf);
+		return;
+	}
 	fscanf(f, "%ld", &now);
 	fclose(f);
-	if(!(f = fopen(BATT_FULL, "r")))
-		return NULL;
+	if(!(f = fopen(BATT_FULL, "r"))) {
+		buffer_clear(buf);
+		return;
+	}
 	fscanf(f, "%ld", &full);
 	fclose(f);
-	if(!(f = fopen(BATT_STAT, "r")))
-		return NULL;
+	if(!(f = fopen(BATT_STAT, "r"))) {
+		buffer_clear(buf);
+		return;
+	}
 	fscanf(f, "%s", status);
 	fclose(f);
 
 	capacity = (float) 100*now/full;
 	if (strcmp(status, "Charging") == 0)
-		return smprintf(BAT_CHRG_STR, capacity);
+		buffer_printf(buf, BAT_CHRG_STR, capacity);
 	else if (strcmp(status, "Full") == 0 || strcmp(status, "Unknown") == 0)
-		return smprintf(BAT_FULL_STR, capacity);
+		buffer_printf(buf, BAT_FULL_STR, capacity);
 	else {
-		if (!(f = fopen(BATT_POW,"r")))
-			return NULL;
+		if (!(f = fopen(BATT_POW,"r"))) {
+			buffer_clear(buf);
+			return;
+		}
 		fscanf(f, "%ld", &power);
 		fclose(f);
 		timeleft = (float) now/power;
 		low = (capacity < BATT_LOW);
-		return smprintf((low ? BAT_LOW_STR : BAT_STR), capacity, timeleft, (float)1.0e-6*power);
+		buffer_printf(buf, low ? BAT_LOW_STR : BAT_STR, capacity, timeleft, (float)1.0e-6*power);
 	}
 }
 
-char *mktimes(int *tmsleep) {
-	char buf[129];
+void mktimes(buffer_t *buf, int *tmsleep) {
+	char tmp[129];
 	time_t tim;
 	struct tm *timtm;
 
-	memset(buf, 0, sizeof(buf));
+	memset(tmp, 0, sizeof(tmp));
 	tim = time(NULL);
 	timtm = localtime(&tim);
 	if (timtm == NULL) {
@@ -191,13 +210,13 @@ char *mktimes(int *tmsleep) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (!strftime(buf, sizeof(buf)-1, DATE_TIME_STR, timtm)) {
+	if (!strftime(tmp, sizeof(tmp)-1, DATE_TIME_STR, timtm)) {
 		fprintf(stderr, "strftime == 0\n");
 		exit(EXIT_FAILURE);
 	}
 
 	*tmsleep = 60 - timtm->tm_sec;
-	return smprintf("%s", buf);
+	buffer_printf(buf, "%s", tmp);
 }
 
 char *get_maildir(const char *maildir) {
@@ -206,9 +225,11 @@ char *get_maildir(const char *maildir) {
 	return smprintf("%s/%s/new", maildir, MAIL_BOX);
 }
 
-char *new_mail(const char *maildir) {
-	if(maildir == NULL)
-		return NULL;
+void new_mail(buffer_t *buf, const char *maildir) {
+	if(maildir == NULL) {
+		buffer_clear(buf);
+		return;
+	}
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
@@ -222,8 +243,10 @@ char *new_mail(const char *maildir) {
 			n++;
 	}
 	closedir(d);
-	if (n == 0)
-		return NULL;
+	if (n == 0) {
+		buffer_clear(buf);
+		return;
+	}
 	else
-		return smprintf(MAIL_STR, n);
+		buffer_printf(buf, MAIL_STR, n);
 }

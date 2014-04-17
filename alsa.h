@@ -1,3 +1,7 @@
 /* See LICENSE file for copyright and license details. */
 
-char *alsaprint(void);
+#include <alsa/asoundlib.h>
+
+#include "util.h"
+
+void alsaprint(buffer_t *buf);
