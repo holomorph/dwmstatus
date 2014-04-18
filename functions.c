@@ -205,17 +205,10 @@ void mktimes(buffer_t *buf, int *tmsleep) {
 
 	memset(tmp, 0, sizeof(tmp));
 	tim = time(NULL);
-	timtm = localtime(&tim);
-	if (timtm == NULL) {
-		perror("localtime");
-		exit(EXIT_FAILURE);
-	}
-
-	if (!strftime(tmp, sizeof(tmp)-1, DATE_TIME_STR, timtm)) {
-		fprintf(stderr, "strftime == 0\n");
-		exit(EXIT_FAILURE);
-	}
-
+	if (!(timtm = localtime(&tim)))
+		err(errno, "localtime");
+	if (!strftime(tmp, sizeof(tmp)-1, DATE_TIME_STR, timtm))
+		err(errno, "strftime");
 	*tmsleep = 60 - timtm->tm_sec;
 	buffer_printf(buf, "%s", tmp);
 }
