@@ -54,6 +54,12 @@ static void parse_args(int *argc, char **argv[]) {
 	}
 }
 
+static void *maildir_init(void) {
+	if(!cfg.maildir || cfg.maildir[0] == '\0')
+		return NULL;
+	return smprintf("%s/%s/new", cfg.maildir, MAIL_BOX);
+}
+
 static int dwmstatus_init(void) {
 	/* initialize a bunch of things:
 	 *
@@ -74,7 +80,7 @@ static int dwmstatus_init(void) {
 
 	if(pulse_init(&pulse) != 0)
 		pa = 0;
-	cfg.mailbox = get_maildir(cfg.maildir);
+	cfg.mailbox = maildir_init();
 	return EXIT_SUCCESS;
 }
 

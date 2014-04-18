@@ -213,12 +213,6 @@ void mktimes(buffer_t *buf, int *tmsleep) {
 	buffer_printf(buf, "%s", tmp);
 }
 
-char *get_maildir(const char *maildir) {
-	if(!maildir || maildir[0] == '\0')
-		return NULL;
-	return smprintf("%s/%s/new", maildir, MAIL_BOX);
-}
-
 void new_mail(buffer_t *buf, const char *maildir) {
 	if(maildir == NULL) {
 		buffer_clear(buf);
