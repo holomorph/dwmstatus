@@ -16,7 +16,6 @@
 
 static Display *dpy;
 static Interface *iface;
-static long rx_old, tx_old;
 static int pa = 1;
 static struct pulseaudio_t pulse;
 
@@ -75,8 +74,6 @@ static int dwmstatus_init(void) {
 	}
 
 	iface = network_init(cfg.iface);
-	rx_old = iface->rx_bytes;
-	tx_old = iface->tx_bytes;
 
 	if(pulse_init(&pulse) != 0)
 		pa = 0;
@@ -168,7 +165,7 @@ int main(int argc, char *argv[]) {
 		loadavg(load);
 		coretemp(temp);
 		memory(mem);
-		network(net, iface, rx_old, tx_old);
+		network(net, iface);
 		battery(batt);
 
 		buffer_t *table[] = {
@@ -185,9 +182,6 @@ int main(int argc, char *argv[]) {
 		size_t table_len = sizeof(table) / sizeof(buffer_t *);
 
 		render_table(table, table_len, status, " \x09| ");
-
-		rx_old = iface->rx_bytes;
-		tx_old = iface->tx_bytes;
 
 		setstatus(status->data);
 	}

@@ -76,12 +76,14 @@ void *network_init(const char *ifname) {
 	}
 	fscanf(f,"%ld", &p->rx_bytes);
 	fclose(f);
+	p->rx_old = p->rx_bytes;
 	if(!(f = fopen(p->tx, "r"))) {
 		network_deinit(p);
 		err(errno, "%s", ifname);
 	}
 	fscanf(f,"%ld", &p->tx_bytes);
 	fclose(f);
+	p->tx_old = p->tx_bytes;
 	return p;
 }
 
@@ -91,25 +93,30 @@ void network_deinit(Interface *iface) {
 	free(iface);
 }
 
-void network(buffer_t *buf, Interface *iface, long rx_old, long tx_old) {
+void network(buffer_t *buf, Interface *iface) {
 	FILE *f;
 	char rxk[7], txk[7];
+	long rxb, txb;
 
 	if(!(f = fopen(iface->rx, "r"))) {
-        buffer_clear(buf);
+		buffer_clear(buf);
 		return;
-    }
+	}
 	fscanf(f, "%ld", &iface->rx_bytes);
 	fclose(f);
 	if(!(f = fopen(iface->tx, "r"))) {
-        buffer_clear(buf);
+		buffer_clear(buf);
 		return;
-    }
+	}
 	fscanf(f, "%ld", &iface->tx_bytes);
 	fclose(f);
 
-	sprintf(rxk, "%.1f", (float)(iface->rx_bytes-rx_old)/1024/INTERVAL);
-	sprintf(txk, "%.1f", (float)(iface->tx_bytes-tx_old)/1024/INTERVAL);
+	rxb = iface->rx_bytes - iface->rx_old;
+	txb = iface->tx_bytes - iface->tx_old;
+	iface->rx_old = iface->rx_bytes;
+	iface->tx_old = iface->tx_bytes;
+	sprintf(rxk, "%.1f", (float)rxb/1024/INTERVAL);
+	sprintf(txk, "%.1f", (float)txb/1024/INTERVAL);
 	buffer_printf(buf, NET_STR, rxk, txk);
 }
 
