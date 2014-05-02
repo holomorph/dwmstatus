@@ -32,7 +32,6 @@
 
 #include "util.h"
 
-#define UNUSED __attribute__((unused))
 #define IO_NEW(io, info, pp) \
   io = calloc(1, sizeof(struct io_t)); \
   io->mute = info->mute; \

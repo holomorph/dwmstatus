@@ -2,6 +2,8 @@
 
 #pragma once
 
+#define UNUSED __attribute__((unused))
+
 typedef struct {
     char *data;
     size_t len;
@@ -9,7 +11,7 @@ typedef struct {
 
 struct item {
     void *(*init)(void);
-    void (*update)(buffer_t *buf);
+    void (*update)(buffer_t *buf, void *state);
 
     buffer_t *buffer;
     void *state;

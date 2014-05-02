@@ -15,7 +15,7 @@
 #include "config.h"
 #include "functions.h"
 
-void loadavg(buffer_t *buf) {
+void loadavg(buffer_t *buf, void UNUSED *state) {
 	double avgs[3];
 	unsigned int hi;
 
@@ -27,7 +27,7 @@ void loadavg(buffer_t *buf) {
 	buffer_printf(buf, hi ? CPU_HI_STR : CPU_STR, avgs[0], avgs[1], avgs[2]);
 }
 
-void coretemp(buffer_t *buf) {
+void coretemp(buffer_t *buf, void UNUSED *state) {
 	FILE *f;
 	int temp;
 	unsigned int hi;
@@ -44,7 +44,7 @@ void coretemp(buffer_t *buf) {
 	buffer_printf(buf, hi ? TEMP_HI_STR : TEMP_STR, temp);
 }
 
-void memory(buffer_t *buf) {
+void memory(buffer_t *buf, void UNUSED *state) {
 	FILE *f;
 	int total, free, buffers, cached, used;
 
@@ -61,39 +61,14 @@ void memory(buffer_t *buf) {
 	buffer_printf(buf, MEM_STR, used);
 }
 
-void *network_init(const char *ifname) {
-	Interface *p = malloc(sizeof(Interface));
-	if(!p)
-		err(errno, "iface malloc");
-	p->name = ifname;
-	p->rx = smprintf("/sys/class/net/%s/statistics/rx_bytes", ifname);
-	p->tx = smprintf("/sys/class/net/%s/statistics/tx_bytes", ifname);
-	FILE *f;
-
-	if(!(f = fopen(p->rx, "r"))) {
-		network_deinit(p);
-		err(errno, "%s", ifname);
-	}
-	fscanf(f,"%ld", &p->rx_bytes);
-	fclose(f);
-	p->rx_old = p->rx_bytes;
-	if(!(f = fopen(p->tx, "r"))) {
-		network_deinit(p);
-		err(errno, "%s", ifname);
-	}
-	fscanf(f,"%ld", &p->tx_bytes);
-	fclose(f);
-	p->tx_old = p->tx_bytes;
-	return p;
-}
-
 void network_deinit(Interface *iface) {
 	free(iface->rx);
 	free(iface->tx);
 	free(iface);
 }
 
-void network(buffer_t *buf, Interface *iface) {
+void network(buffer_t *buf, void *state) {
+	Interface *iface = state;
 	FILE *f;
 	char rxk[7], txk[7];
 	long rxb, txb;
@@ -120,7 +95,8 @@ void network(buffer_t *buf, Interface *iface) {
 	buffer_printf(buf, NET_STR, rxk, txk);
 }
 
-void ipaddr(buffer_t *buf, const char *ifname) {
+void ipaddr(buffer_t *buf, void *state) {
+	const char *ifname = state;
 	struct ifaddrs *ifaddr, *ifa;
 	socklen_t len = sizeof(struct sockaddr_in);
 	char host[NI_MAXHOST];
@@ -161,7 +137,7 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 	buffer_printf(buf, NET_ICON, "\x04");
 }
 
-void battery(buffer_t *buf) {
+void battery(buffer_t *buf, void UNUSED *state) {
 	FILE *f = NULL;
 	long now, full, power;
 	char status[11];
@@ -205,7 +181,7 @@ void battery(buffer_t *buf) {
 	}
 }
 
-void mktimes(buffer_t *buf, int *tmsleep) {
+void mktimes(buffer_t *buf, void UNUSED *state) {
 	char tmp[129];
 	time_t tim;
 	struct tm *timtm;
@@ -216,11 +192,11 @@ void mktimes(buffer_t *buf, int *tmsleep) {
 		err(errno, "localtime");
 	if (!strftime(tmp, sizeof(tmp)-1, DATE_TIME_STR, timtm))
 		err(errno, "strftime");
-	*tmsleep = 60 - timtm->tm_sec;
 	buffer_printf(buf, "%s", tmp);
 }
 
-void new_mail(buffer_t *buf, const char *maildir) {
+void new_mail(buffer_t *buf, void *state) {
+	const char *maildir = state;
 	if(maildir == NULL) {
 		buffer_clear(buf);
 		return;
