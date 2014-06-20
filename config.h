@@ -13,7 +13,7 @@
 #define BATT_NOW  "/sys/class/power_supply/BAT1/energy_now"
 #define BATT_FULL "/sys/class/power_supply/BAT1/energy_full_design"
 #define BATT_STAT "/sys/class/power_supply/BAT1/status"
-#define CPU_TEMP0 "/sys/devices/platform/coretemp.0/temp2_input"
+#define CPU_TEMP0 "/sys/class/hwmon/hwmon0/temp2_input"
 
 /* mail */
 #define MAIL_STR     "\x01\uE013 %d"
