@@ -221,16 +221,14 @@ void mktimes(buffer_t *buf, int *tmsleep) {
 }
 
 void new_mail(buffer_t *buf, const char *maildir) {
-	if(maildir == NULL) {
-		buffer_clear(buf);
-		return;
-	}
 	int n = 0;
 	DIR *d = NULL;
 	struct dirent *rf = NULL;
 
-	if(!(d = opendir(maildir)))
-		err(errno, "cannot read directory %s", maildir);
+	if(maildir == NULL || !(d = opendir(maildir))) {
+		buffer_clear(buf);
+		return;
+	}
 	while ((rf = readdir(d)) != NULL) {
 		if (strcmp(rf->d_name, ".") != 0 && strcmp(rf->d_name, "..") != 0)
 			n++;
