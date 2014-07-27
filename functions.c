@@ -234,10 +234,9 @@ void new_mail(buffer_t *buf, const char *maildir) {
 			n++;
 	}
 	closedir(d);
-	if (n == 0) {
-		buffer_clear(buf);
+	if (n > 0) {
+		buffer_printf(buf, MAIL_STR, n);
 		return;
 	}
-	else
-		buffer_printf(buf, MAIL_STR, n);
+	buffer_clear(buf);
 }
