@@ -103,17 +103,15 @@ static void render_table(buffer_t **table, size_t table_len, buffer_t *status, c
 	char *p;
 	unsigned int first;
 
-	for (first = 0; first < table_len && table[first]->data == NULL; ++first);
+	for (first = 0; first < table_len && (table[first]->data == NULL || table[first]->data[0] == '\0'); ++first);
 	if (first == table_len) {
 		buffer_clear(status);
 		return;
 	}
 	len = strlen(table[first]->data);
-	for (i = first + 1; i < table_len; ++i) {
-		if (table[i]->data) {
+	for (i = first + 1; i < table_len; ++i)
+		if (table[i]->data && table[i]->data[0] != '\0')
 			len += strlen(table[i]->data) + slen;
-		}
-	}
 	if (len >= status->len) {
 		status->data = realloc(status->data, (size_t)len + 1);
 		status->len = len + 1;
@@ -121,11 +119,10 @@ static void render_table(buffer_t **table, size_t table_len, buffer_t *status, c
 
 	p = stpcpy(status->data, table[first]->data);
 	for (i = first + 1; i < table_len; ++i)
-		if (table[i]->data) {
+		if (table[i]->data && table[i]->data[0] != '\0') {
 			p = stpcpy(p, sep);
 			p = stpcpy(p, table[i]->data);
 		}
-	return;
 }
 
 int main(int argc, char *argv[]) {
