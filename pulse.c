@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "config.h"
 #include "pulse.h"
@@ -49,8 +50,7 @@ static void io_list_add(struct io_t **list, struct io_t *node) {
 }
 
 static void populate_levels(struct io_t *node) {
-  node->volume_percent = (int)((pa_cvolume_avg(&node->volume) * 100)
-                               / PA_VOLUME_NORM);
+  node->volume_percent = round(pa_cvolume_avg(&node->volume) * 100.0 / PA_VOLUME_NORM);
 }
 
 static struct io_t *sink_new(const pa_sink_info *info) {
