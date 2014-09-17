@@ -150,6 +150,19 @@ int main(int argc, char *argv[]) {
 	buffer_t *batt = buffer_new();
 	buffer_t *date = buffer_new();
 
+	buffer_t *table[] = {
+		mail,
+		vol,
+		load,
+		temp,
+		mem,
+		net,
+		addr,
+		batt,
+		date
+	};
+	size_t table_len = sizeof(table) / sizeof(buffer_t *);
+
 	for(;;sleep(INTERVAL)) {
 		if(runevery(&count60, tmsleep)) {
 			ipaddr(addr, cfg.iface);
@@ -164,19 +177,6 @@ int main(int argc, char *argv[]) {
 		memory(mem);
 		network(net, iface);
 		battery(batt);
-
-		buffer_t *table[] = {
-			mail,
-			vol,
-			load,
-			temp,
-			mem,
-			net,
-			addr,
-			batt,
-			date
-		};
-		size_t table_len = sizeof(table) / sizeof(buffer_t *);
 
 		render_table(table, table_len, status, " \x09| ");
 
