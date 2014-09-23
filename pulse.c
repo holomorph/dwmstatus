@@ -24,8 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* modified from tag v1.0
- * https://github.com/falconindy/ponymix/tree/d5eeab4 */
+/* modified from ponymix r110 d5eeab4 */
 
 #include <stdio.h>
 #include <string.h>

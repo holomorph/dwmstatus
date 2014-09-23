@@ -24,9 +24,7 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/* modified from tag v1.0
- * https://github.com/falconindy/ponymix
- * /tree/d5eeab41f026d97b25efe00e3df9d7ee75e8d04a */
+/* modified from ponymix r110 d5eeab4 */
 
 #include <pulse/pulseaudio.h>
 
