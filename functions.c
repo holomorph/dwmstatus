@@ -187,7 +187,7 @@ void battery(buffer_t *buf) {
 	fscanf(f, "%s", status);
 	fclose(f);
 
-	capacity = (float) 100*now/full;
+	capacity =  100 * (float)now / (float)full;
 	if (strcmp(status, "Charging") == 0)
 		buffer_printf(buf, BAT_CHRG_STR, capacity);
 	else if (strcmp(status, "Full") == 0 || strcmp(status, "Unknown") == 0)
@@ -199,9 +199,9 @@ void battery(buffer_t *buf) {
 		}
 		fscanf(f, "%ld", &power);
 		fclose(f);
-		timeleft = (float) now/power;
+		timeleft = (float)now / (float)power;
 		low = (capacity < BATT_LOW);
-		buffer_printf(buf, low ? BAT_LOW_STR : BAT_STR, capacity, timeleft, (float)1.0e-6*power);
+		buffer_printf(buf, low ? BAT_LOW_STR : BAT_STR, capacity, timeleft, 1.0e-6 * (float)power);
 	}
 }
 
