@@ -137,10 +137,10 @@ void ponyprint(buffer_t *buf, struct pulseaudio_t pulse, int *pa_running) {
   if(!arg.devices) {
     fprintf(stderr, "bestpony died\n");
     *pa_running = 0;
-    buffer_printf(buf, VOL_MUTE_STR, 0, "X");
+    buffer_printf(buf, VOL_MUTE_FMT, 0, "X");
   }
   else
-    buffer_printf(buf, arg.devices->mute ? VOL_MUTE_STR : VOL_STR, arg.devices->volume_percent, "%");
+    buffer_printf(buf, arg.devices->mute ? VOL_MUTE_FMT : VOL_FMT, arg.devices->volume_percent, "%");
 }
 
 /* vim: set ts=2 sw=2 et: */

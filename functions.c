@@ -24,7 +24,7 @@ void loadavg(buffer_t *buf) {
 		exit(EXIT_FAILURE);
 	}
 	hi = (avgs[0] > LOAD_HI);
-	buffer_printf(buf, hi ? CPU_HI_STR : CPU_STR, avgs[0], avgs[1], avgs[2]);
+	buffer_printf(buf, hi ? CPU_HI_FMT : CPU_FMT, avgs[0], avgs[1], avgs[2]);
 }
 
 void coretemp(buffer_t *buf) {
@@ -41,7 +41,7 @@ void coretemp(buffer_t *buf) {
 
 	temp /= 1000;
 	hi = (temp >= TEMP_HI);
-	buffer_printf(buf, hi ? TEMP_HI_STR : TEMP_STR, temp);
+	buffer_printf(buf, hi ? TEMP_HI_FMT : TEMP_FMT, temp);
 }
 
 void memory(buffer_t *buf) {
@@ -58,7 +58,7 @@ void memory(buffer_t *buf) {
 	fclose(f);
 
 	used = (total - free - buffers - cached)/1024;
-	buffer_printf(buf, MEM_STR, used);
+	buffer_printf(buf, MEM_FMT, used);
 }
 
 void *network_init(const char *ifname) {
@@ -117,7 +117,7 @@ void network(buffer_t *buf, Interface *iface) {
 	iface->tx_old = iface->tx_bytes;
 	sprintf(rxk, "%.1f", (float)rxb/1024/INTERVAL);
 	sprintf(txk, "%.1f", (float)txb/1024/INTERVAL);
-	buffer_printf(buf, NET_STR, rxk, txk);
+	buffer_printf(buf, RX_FMT " " TX_FMT, rxk, txk);
 }
 
 void ipaddr(buffer_t *buf, const char *ifname) {
@@ -139,7 +139,7 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
 			/* iface is down */
-			buffer_printf(buf, NET_ICON, "\x09");
+			buffer_printf(buf, NET_FMT, "\x09");
 			return;
 		}
 	}
@@ -154,11 +154,11 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
 		/* no address */
-		buffer_printf(buf, NET_ICON, "\x03");
+		buffer_printf(buf, NET_FMT, "\x03");
 		return;
 	}
 	freeifaddrs(ifaddr);
-	buffer_printf(buf, NET_ICON, "\x04");
+	buffer_printf(buf, NET_FMT, "\x04");
 }
 
 void battery(buffer_t *buf) {
@@ -189,9 +189,9 @@ void battery(buffer_t *buf) {
 
 	capacity =  100 * (float)now / (float)full;
 	if (strcmp(status, "Charging") == 0)
-		buffer_printf(buf, BAT_CHRG_STR, capacity);
+		buffer_printf(buf, BAT_CHRG_FMT, capacity);
 	else if (strcmp(status, "Full") == 0 || strcmp(status, "Unknown") == 0)
-		buffer_printf(buf, BAT_FULL_STR, capacity);
+		buffer_printf(buf, BAT_FULL_FMT, capacity);
 	else {
 		if (!(f = fopen(BATT_POW,"r"))) {
 			buffer_clear(buf);
@@ -201,7 +201,7 @@ void battery(buffer_t *buf) {
 		fclose(f);
 		timeleft = (float)now / (float)power;
 		low = (capacity < BATT_LOW);
-		buffer_printf(buf, low ? BAT_LOW_STR : BAT_STR, capacity, timeleft, 1.0e-6 * (float)power);
+		buffer_printf(buf, low ? BAT_LOW_FMT : BAT_FMT, capacity, timeleft, 1.0e-6 * (float)power);
 	}
 }
 
@@ -214,7 +214,7 @@ void mktimes(buffer_t *buf, int *tmsleep) {
 	tim = time(NULL);
 	if (!(timtm = localtime(&tim)))
 		err(errno, "localtime");
-	if (!strftime(tmp, sizeof(tmp)-1, DATE_TIME_STR, timtm))
+	if (!strftime(tmp, sizeof(tmp)-1, TIMEDATE_FMT, timtm))
 		err(errno, "strftime");
 	*tmsleep = 60 - timtm->tm_sec;
 	buffer_printf(buf, "%s", tmp);
@@ -235,7 +235,7 @@ void new_mail(buffer_t *buf, const char *maildir) {
 	}
 	closedir(d);
 	if (n > 0) {
-		buffer_printf(buf, MAIL_STR, n);
+		buffer_printf(buf, MAIL_FMT, n);
 		return;
 	}
 	buffer_clear(buf);
