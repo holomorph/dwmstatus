@@ -164,7 +164,7 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 void battery(buffer_t *buf) {
 	FILE *f = NULL;
 	long now, full, power;
-	char status[11];
+	char status[12];
 	float capacity, timeleft;
 	unsigned int low;
 
