@@ -139,7 +139,7 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 		if ((ifa->ifa_flags & IFF_RUNNING) == 0) {
 			freeifaddrs(ifaddr);
 			/* iface is down */
-			buffer_printf(buf, NET_FMT, "\x09");
+			buffer_printf(buf, CLR(NET_FMT, "#373b41"));
 			return;
 		}
 	}
@@ -154,11 +154,11 @@ void ipaddr(buffer_t *buf, const char *ifname) {
 		fprintf(stderr, "%s\n", gai_strerror(ret));
 		freeifaddrs(ifaddr);
 		/* no address */
-		buffer_printf(buf, NET_FMT, "\x03");
+		buffer_printf(buf, CLR(NET_FMT, "#af3a3a"));
 		return;
 	}
 	freeifaddrs(ifaddr);
-	buffer_printf(buf, NET_FMT, "\x04");
+	buffer_printf(buf, CLR(NET_FMT, "#84aed3"));
 }
 
 void battery(buffer_t *buf) {
