@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 		network(net, iface);
 		battery(batt);
 
-		render_table(table, table_len, status, " \x09| ");
+		render_table(table, table_len, status, SEPARATOR);
 
 		setstatus(status->data);
 	}
